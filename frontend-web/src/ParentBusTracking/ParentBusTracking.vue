@@ -203,7 +203,7 @@ function mostrarMapa(lat, lon) {
       }).addTo(mapa)
       marcador.bindPopup(`Autobús ${autobusPadre.value.matricula}`)
     } else {
-      mapa.setView([lat, lon], 15)
+      // Only move the marker — do NOT re-center so the user can freely pan/zoom
       marcador.setLatLng([lat, lon])
     }
   }, 200)
@@ -269,7 +269,7 @@ function iniciarActualizacionPeriódica() {
 
 onMounted(() => {
   cargarDatosDelPadre()
-  iniciarActualizacionPeriódica()
+  // iniciarActualizacionPeriódica() is already called inside cargarDatosDelPadre
 })
 
 onBeforeUnmount(() => {
