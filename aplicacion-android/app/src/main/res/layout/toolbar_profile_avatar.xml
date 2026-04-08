@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
     android:paddingStart="4dp"
-    android:paddingEnd="8dp">
+    android:paddingEnd="12dp">
 
     <FrameLayout
         android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_gravity="center">
+        android:layout_height="36dp">
 
         <View
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/bg_avatar_circle"
-            android:alpha="0.25" />
+            android:alpha="0.30" />
 
         <TextView
             android:id="@+id/tvToolbarAvatarInitial"
@@ -25,4 +26,16 @@
             android:textSize="16sp"
             android:textStyle="bold" />
     </FrameLayout>
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/tvToolbarUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:maxWidth="120dp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>

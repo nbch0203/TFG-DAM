@@ -47,6 +47,7 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
     private SessionManager session;
     private StopsAdapter stopsAdapter;
     private TextView tvToolbarAvatar;
+    private TextView tvToolbarUserName;
 
     private RouteInfo currentRoute;
     private long busId = -1;
@@ -145,16 +146,23 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         });
 
         profileViewModel.getProfile().observe(this, profile -> {
-            if (profile == null || tvToolbarAvatar == null) return;
+            if (profile == null) return;
             String initial;
+            String name;
             if (profile.getNombre() != null && !profile.getNombre().isEmpty()) {
                 initial = String.valueOf(profile.getNombre().charAt(0)).toUpperCase();
+                name = profile.getNombre();
+                if (profile.getApellidos() != null && !profile.getApellidos().isEmpty()) {
+                    name = name + " " + profile.getApellidos();
+                }
             } else if (profile.getEmail() != null && !profile.getEmail().isEmpty()) {
                 initial = String.valueOf(profile.getEmail().charAt(0)).toUpperCase();
+                name = profile.getEmail();
             } else {
                 return;
             }
-            tvToolbarAvatar.setText(initial);
+            if (tvToolbarAvatar != null) tvToolbarAvatar.setText(initial);
+            if (tvToolbarUserName != null) tvToolbarUserName.setText(name);
         });
     }
 
@@ -280,9 +288,13 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
             View actionView = profileItem.getActionView();
             if (actionView != null) {
                 tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
+                tvToolbarUserName = actionView.findViewById(R.id.tvToolbarUserName);
                 String email = session.getEmail();
                 if (tvToolbarAvatar != null && !email.isEmpty()) {
                     tvToolbarAvatar.setText(String.valueOf(email.charAt(0)).toUpperCase());
+                }
+                if (tvToolbarUserName != null && !email.isEmpty()) {
+                    tvToolbarUserName.setText(email);
                 }
                 actionView.setOnClickListener(v ->
                         startActivity(new Intent(this, ProfileActivity.class)));
