@@ -65,6 +65,12 @@
             android:name=".ui.driver.DriverMainActivity"
             android:exported="false" />
 
+        <!-- Perfil del usuario -->
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- Servicio GPS en segundo plano para el conductor -->
         <service
             android:name=".service.GpsTrackingService"

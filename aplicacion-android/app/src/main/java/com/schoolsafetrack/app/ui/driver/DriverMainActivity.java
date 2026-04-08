@@ -26,6 +26,8 @@ import com.schoolsafetrack.app.databinding.DialogIncidentBinding;
 import com.schoolsafetrack.app.service.GpsTrackingService;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
 
+import com.schoolsafetrack.app.ui.profile.ProfileActivity;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +73,10 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
             if (item.getItemId() == R.id.action_logout) {
                 stopGpsService();
                 logout();
+                return true;
+            }
+            if (item.getItemId() == R.id.action_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             }
             return false;

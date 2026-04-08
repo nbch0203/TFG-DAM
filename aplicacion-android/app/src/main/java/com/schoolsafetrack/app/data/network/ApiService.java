@@ -6,6 +6,8 @@ import com.schoolsafetrack.app.data.model.Child;
 import com.schoolsafetrack.app.data.model.Incident;
 import com.schoolsafetrack.app.data.model.LoginResponse;
 import com.schoolsafetrack.app.data.model.TodayRouteResponse;
+import com.schoolsafetrack.app.data.model.UpdateProfileResponse;
+import com.schoolsafetrack.app.data.model.UserProfile;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -22,6 +25,15 @@ public interface ApiService {
     // ── Auth ──────────────────────────────────────────────────────────────────
     @POST("login")
     Call<LoginResponse> login(@Body Map<String, String> credentials);
+
+    // ── Perfil de usuario ─────────────────────────────────────────────────────
+    @GET("users/{id}")
+    Call<UserProfile> getUserProfile(@Path("id") long id);
+
+    @PATCH("users/{id}/profile")
+    Call<UpdateProfileResponse> updateProfile(
+            @Path("id") long id,
+            @Body Map<String, String> fields);
 
     // ── Padre ─────────────────────────────────────────────────────────────────
     @GET("parent/{parentId}/children")

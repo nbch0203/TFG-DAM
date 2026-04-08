@@ -25,6 +25,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import com.schoolsafetrack.app.ui.profile.ProfileActivity;
+
 import java.util.List;
 
 public class ParentMainActivity extends AppCompatActivity implements ChildrenAdapter.OnChildClickListener {
@@ -71,6 +73,10 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         binding.toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_logout) {
                 logout();
+                return true;
+            }
+            if (item.getItemId() == R.id.action_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             }
             return false;

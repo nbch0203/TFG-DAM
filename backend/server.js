@@ -623,6 +623,77 @@ app.post('/api/users', async (req, res) => {
   );
 });
 
+// Obtener perfil de un usuario por id (sin contraseña)
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, email, role, nombre, apellidos FROM users WHERE id = ?',
+      [req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Actualizar perfil propio (no se pueden cambiar id ni role)
+app.patch('/api/users/:id/profile', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Id de usuario inválido' });
+    }
+
+    const { nombre, apellidos, email, password } = req.body;
+
+    if (!nombre && !apellidos && !email && !password) {
+      return res.status(400).json({ error: 'Debes proporcionar al menos un campo a actualizar' });
+    }
+
+    // Obtener valores actuales para no sobreescribir con null
+    const [current] = await pool.query(
+      'SELECT nombre, apellidos, email FROM users WHERE id = ?', [id]
+    );
+    if (current.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const newNombre   = nombre   !== undefined ? String(nombre).trim()   : current[0].nombre;
+    const newApellidos = apellidos !== undefined ? String(apellidos).trim() : current[0].apellidos;
+    const newEmail    = email    !== undefined ? String(email).trim()    : current[0].email;
+
+    // Validación mínima de email
+    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      return res.status(400).json({ error: 'Formato de email no válido' });
+    }
+
+    let query = 'UPDATE users SET nombre = ?, apellidos = ?, email = ?';
+    const params = [newNombre || null, newApellidos || null, newEmail];
+
+    if (password) {
+      if (String(password).length < 6) {
+        return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+      }
+      const hashed = await bcrypt.hash(password, 10);
+      query += ', password = ?';
+      params.push(hashed);
+    }
+
+    query += ' WHERE id = ?';
+    params.push(id);
+
+    const [result] = await pool.query(query, params);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    // Devolver perfil actualizado
+    const [updated] = await pool.query(
+      'SELECT id, email, role, nombre, apellidos FROM users WHERE id = ?', [id]
+    );
+    res.json({ success: true, user: updated[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Actualizar
 app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
