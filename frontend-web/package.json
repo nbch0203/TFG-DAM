@@ -1,0 +1,47 @@
+{
+  "name": "frontend-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
+    "lint:eslint": "eslint . --fix --cache",
+    "lint": "run-s lint:*",
+    "format": "prettier --write --experimental-cli src/"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
+    "leaflet": "^1.9.4",
+    "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.3",
+    "vue": "^3.5.25",
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@prettier/plugin-oxc": "^0.0.5",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.39.1",
+    "eslint-plugin-oxlint": "~1.29.0",
+    "eslint-plugin-vue": "~10.5.1",
+    "globals": "^16.5.0",
+    "npm-run-all2": "^8.0.4",
+    "oxlint": "~1.29.0",
+    "postcss": "^8.5.6",
+    "prettier": "3.6.2",
+    "tailwindcss": "^4.1.18",
+    "vite": "^7.2.4",
+    "vite-plugin-vue-devtools": "^8.0.5"
+  }
+}
