@@ -3,6 +3,8 @@ package com.schoolsafetrack.app.ui.parent;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -69,18 +71,6 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.parent_panel);
         }
-        binding.toolbar.inflateMenu(R.menu.menu_main);
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_logout) {
-                logout();
-                return true;
-            }
-            if (item.getItemId() == R.id.action_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
-        });
 
         // Botón refrescar mapa
         binding.btnRefreshMap.setOnClickListener(v ->
@@ -196,6 +186,25 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                 });
 
         map.invalidate();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return true;
+        }
+        if (item.getItemId() == R.id.action_logout) {
+            logout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void logout() {

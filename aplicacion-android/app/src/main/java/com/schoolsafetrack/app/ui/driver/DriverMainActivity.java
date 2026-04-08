@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -68,19 +70,6 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.driver_panel);
         }
-        binding.toolbar.inflateMenu(R.menu.menu_main);
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_logout) {
-                stopGpsService();
-                logout();
-                return true;
-            }
-            if (item.getItemId() == R.id.action_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
-        });
 
         binding.btnFinishRoute.setOnClickListener(v -> confirmFinishRoute());
         binding.btnReportIncident.setOnClickListener(v -> showIncidentDialog());
@@ -261,6 +250,26 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
                 Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return true;
+        }
+        if (item.getItemId() == R.id.action_logout) {
+            stopGpsService();
+            logout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void logout() {
