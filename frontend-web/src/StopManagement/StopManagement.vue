@@ -104,6 +104,76 @@ function cerrarForm() {
   editado.value = {}
   error.value = ''
 }
+
+// ── Haversine distance (km) between two {lat, lng/longitud} points ──────────
+function haversine(p1, p2) {
+  const R = 6371
+  const lat1 = p1.lat ?? p1.latitud
+  const lng1 = p1.lng ?? p1.longitud
+  const lat2 = p2.lat ?? p2.latitud
+  const lng2 = p2.lng ?? p2.longitud
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+// ── Nearest-neighbour reorder (greedy) ──────────────────────────────────────
+// origen: optional {lat, lng} starting point; defaults to the first stop in the list.
+// Returns a new array with the `orden` field reassigned 1…N.
+function reordenarParadas(paradas, origen = null) {
+  // Skip reorder if fewer than 2 stops or no coordinates available
+  const conCoordenadas = paradas.filter(p => (p.lat ?? p.latitud) != null && (p.lng ?? p.longitud) != null)
+  if (conCoordenadas.length < 2) {
+    return paradas.map((p, i) => ({ ...p, orden: i + 1 }))
+  }
+
+  const pendientes = [...conCoordenadas]
+  const ruta = []
+
+  let actual = origen ?? pendientes.shift()
+  if (!origen) ruta.push(actual)
+
+  while (pendientes.length > 0) {
+    let minDist = Infinity
+    let idx = -1
+    pendientes.forEach((p, i) => {
+      const d = haversine(actual, p)
+      if (d < minDist) { minDist = d; idx = i }
+    })
+    actual = pendientes.splice(idx, 1)[0]
+    ruta.push(actual)
+  }
+
+  return ruta.map((p, i) => ({ ...p, orden: i + 1 }))
+}
+
+// ── After saving a stop, reorder all stops in the same route ────────────────
+async function reordenarRuta(routeId) {
+  const apiUrl = getApiUrl()
+  // Fetch all stops for this route
+  const res = await fetch(`${apiUrl}/stops`)
+  const todas = await res.json()
+  const deEstaRuta = todas.filter(s => String(s.route_id) === String(routeId))
+  if (deEstaRuta.length < 2) return
+
+  const reordenadas = reordenarParadas(deEstaRuta)
+
+  // Persist the new orden for each stop
+  await Promise.all(
+    reordenadas.map(p =>
+      fetch(`${apiUrl}/stops/${p.id}/orden`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orden: p.orden })
+      })
+    )
+  )
+}
+
 async function guardarParada() {
   error.value = ''
   try {
@@ -117,6 +187,8 @@ async function guardarParada() {
     })
     if (res.ok) {
       showForm.value = false
+      // Reorder all stops in the affected route before refreshing the list
+      await reordenarRuta(editado.value.route_id)
       await cargarParadas()
     } else {
       const data = await res.json()
