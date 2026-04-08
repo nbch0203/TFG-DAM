@@ -5,7 +5,8 @@
     <item
         android:id="@+id/action_profile"
         android:title="@string/profile_title"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_account_circle"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_logout"
