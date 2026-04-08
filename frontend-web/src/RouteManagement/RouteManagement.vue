@@ -11,7 +11,7 @@
       <label>Nombre:
         <input v-model="filtroNombre" placeholder="Buscar por nombre" class="input-filtro" />
       </label>
-      <button class="crear-btn" @click="showForm = true">Crear ruta</button>
+      <button class="crear-btn" @click="abrirCrear">Crear ruta</button>
     </div>
     <div class="tabla-wrapper">
       <table v-if="rutasFiltradas.length" class="ruta-table mejor-tabla">
@@ -260,6 +260,16 @@ function abrirEditar(route) {
   showForm.value = true
   error.value = ''
 }
+function abrirCrear() {
+  editado.value = {
+    nombre: '',
+    horario_inicio: '',
+    horario_fin: '',
+    school_id: filtroSchool.value || ''
+  }
+  showForm.value = true
+  error.value = ''
+}
 function cerrarForm() {
   showForm.value = false
   editado.value = {}
@@ -277,7 +287,7 @@ async function guardarRuta() {
       body: JSON.stringify(editado.value)
     })
     if (res.ok) {
-      showForm.value = false
+      cerrarForm()
       await cargarRutas()
     } else {
       const data = await res.json()

@@ -11,7 +11,7 @@
       <label>Nombre:
         <input v-model="filtroNombre" placeholder="Buscar por nombre" class="input-filtro" />
       </label>
-      <button class="crear-btn" @click="showForm = true">Crear parada</button>
+      <button class="crear-btn" @click="abrirCrear">Crear parada</button>
     </div>
     <div class="tabla-wrapper">
       <table v-if="paradasFiltradas.length" class="parada-table mejor-tabla">
@@ -43,8 +43,13 @@
         <form @submit.prevent="guardarParada">
           <label>Nombre:</label>
           <input v-model="editado.nombre" required />
-          <label>Ruta (ID):</label>
-          <input v-model="editado.route_id" required type="number" />
+          <label>Ruta:</label>
+          <select v-model="editado.route_id" required>
+            <option disabled value="">Selecciona una ruta</option>
+            <option v-for="route in rutasDisponibles" :key="route.id" :value="route.id">
+              {{ route.nombre }}
+            </option>
+          </select>
           <label>Colegio:</label>
           <select v-model="editado.school_id" required>
             <option v-for="school in schools" :key="school.id" :value="school.id">{{ school.nombre }}</option>
@@ -69,11 +74,16 @@ import { ref, onMounted, computed } from 'vue'
 import { getApiUrl } from '../utils/api.js'
 const stops = ref([])
 const schools = ref([])
+const routes = ref([])
 const showForm = ref(false)
 const editado = ref({})
 const error = ref('')
 const filtroSchool = ref("")
 const filtroNombre = ref("")
+const rutasDisponibles = computed(() => {
+  if (!editado.value.school_id) return routes.value
+  return routes.value.filter((route) => String(route.school_id) === String(editado.value.school_id))
+})
 const paradasFiltradas = computed(() => {
   return stops.value.filter(s =>
     (!filtroSchool.value || String(s.school_id) === String(filtroSchool.value)) &&
@@ -94,8 +104,29 @@ async function cargarColegios() {
     schools.value = await res.json()
   } catch { schools.value = [] }
 }
+async function cargarRutas() {
+  try {
+    const apiUrl = getApiUrl()
+    const res = await fetch(`${apiUrl}/routes`)
+    routes.value = res.ok ? await res.json() : []
+  } catch {
+    routes.value = []
+  }
+}
 function abrirEditar(stop) {
   editado.value = { ...stop }
+  showForm.value = true
+  error.value = ''
+}
+function abrirCrear() {
+  editado.value = {
+    nombre: '',
+    route_id: '',
+    school_id: filtroSchool.value || '',
+    latitud: '',
+    longitud: '',
+    orden: 1
+  }
   showForm.value = true
   error.value = ''
 }
@@ -110,13 +141,21 @@ async function guardarParada() {
     const apiUrl = getApiUrl()
     const method = editado.value.id ? 'PUT' : 'POST';
     const url = editado.value.id ? `${apiUrl}/stops/${editado.value.id}` : `${apiUrl}/stops`;
+    const payload = {
+      ...editado.value,
+      route_id: Number(editado.value.route_id),
+      school_id: Number(editado.value.school_id),
+      latitud: editado.value.latitud === '' ? null : Number(editado.value.latitud),
+      longitud: editado.value.longitud === '' ? null : Number(editado.value.longitud),
+      orden: editado.value.orden === '' ? 1 : Number(editado.value.orden)
+    }
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editado.value)
+      body: JSON.stringify(payload)
     })
     if (res.ok) {
-      showForm.value = false
+      cerrarForm()
       await cargarParadas()
     } else {
       const data = await res.json()
@@ -132,5 +171,5 @@ async function eliminarParada(id) {
     if (res.ok) await cargarParadas()
   } catch {}
 }
-onMounted(() => { cargarParadas(); cargarColegios(); })
+onMounted(() => { cargarParadas(); cargarColegios(); cargarRutas(); })
 </script>
