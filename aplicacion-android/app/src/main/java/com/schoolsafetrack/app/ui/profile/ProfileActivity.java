@@ -62,14 +62,16 @@ public class ProfileActivity extends AppCompatActivity {
         viewModel.getLoading().observe(this, loading -> {
             boolean isLoading = Boolean.TRUE.equals(loading);
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            binding.ibEditNombre.setEnabled(!isLoading);
-            binding.ibEditApellidos.setEnabled(!isLoading);
-            binding.ibEditEmail.setEnabled(!isLoading);
-            binding.btnChangePassword.setEnabled(!isLoading);
+            if (isLoading) {
+                setEditButtonsEnabled(false);
+            }
             binding.btnLogout.setEnabled(!isLoading);
         });
 
-        viewModel.getProfile().observe(this, this::populateUi);
+        viewModel.getProfile().observe(this, profile -> {
+            populateUi(profile);
+            setEditButtonsEnabled(profile != null);
+        });
 
         viewModel.getErrorMessage().observe(this, msg -> {
             if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
@@ -80,6 +82,13 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.profile_saved_ok, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void setEditButtonsEnabled(boolean enabled) {
+        binding.ibEditNombre.setEnabled(enabled);
+        binding.ibEditApellidos.setEnabled(enabled);
+        binding.ibEditEmail.setEnabled(enabled);
+        binding.btnChangePassword.setEnabled(enabled);
     }
 
     private void populateUi(UserProfile profile) {
