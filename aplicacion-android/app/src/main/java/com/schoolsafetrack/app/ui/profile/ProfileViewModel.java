@@ -26,18 +26,18 @@ public class ProfileViewModel extends ViewModel {
 
     public void loadProfile(long userId) {
         loading.setValue(true);
-        MutableLiveData<UserProfile> result = new MutableLiveData<>();
-        MutableLiveData<String> error = new MutableLiveData<>();
+        repository.loadProfile(userId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile p) {
+                profile.postValue(p);
+                loading.postValue(false);
+            }
 
-        repository.loadProfile(userId, result, error);
-
-        result.observeForever(p -> {
-            profile.postValue(p);
-            loading.postValue(false);
-        });
-        error.observeForever(msg -> {
-            errorMessage.postValue(msg);
-            loading.postValue(false);
+            @Override
+            public void onError(String msg) {
+                errorMessage.postValue(msg);
+                loading.postValue(false);
+            }
         });
     }
 
@@ -48,19 +48,19 @@ public class ProfileViewModel extends ViewModel {
         if (apellidos != null) fields.put("apellidos", apellidos);
         if (email != null)     fields.put("email",     email);
 
-        MutableLiveData<UserProfile> result = new MutableLiveData<>();
-        MutableLiveData<String> error = new MutableLiveData<>();
+        repository.updateProfile(userId, fields, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile p) {
+                profile.postValue(p);
+                loading.postValue(false);
+                saveSuccess.postValue(true);
+            }
 
-        repository.updateProfile(userId, fields, result, error);
-
-        result.observeForever(p -> {
-            profile.postValue(p);
-            loading.postValue(false);
-            saveSuccess.postValue(true);
-        });
-        error.observeForever(msg -> {
-            errorMessage.postValue(msg);
-            loading.postValue(false);
+            @Override
+            public void onError(String msg) {
+                errorMessage.postValue(msg);
+                loading.postValue(false);
+            }
         });
     }
 
@@ -69,18 +69,18 @@ public class ProfileViewModel extends ViewModel {
         Map<String, String> fields = new HashMap<>();
         fields.put("password", newPassword);
 
-        MutableLiveData<UserProfile> result = new MutableLiveData<>();
-        MutableLiveData<String> error = new MutableLiveData<>();
+        repository.updateProfile(userId, fields, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile p) {
+                loading.postValue(false);
+                saveSuccess.postValue(true);
+            }
 
-        repository.updateProfile(userId, fields, result, error);
-
-        result.observeForever(p -> {
-            loading.postValue(false);
-            saveSuccess.postValue(true);
-        });
-        error.observeForever(msg -> {
-            errorMessage.postValue(msg);
-            loading.postValue(false);
+            @Override
+            public void onError(String msg) {
+                errorMessage.postValue(msg);
+                loading.postValue(false);
+            }
         });
     }
 }

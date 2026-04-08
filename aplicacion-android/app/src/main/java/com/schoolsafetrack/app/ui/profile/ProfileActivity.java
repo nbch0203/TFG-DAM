@@ -34,6 +34,15 @@ public class ProfileActivity extends AppCompatActivity {
         observeViewModel();
         setupButtons();
 
+        // Pre-fill email from session immediately as a fallback
+        if (binding.etEmail.getText() != null && binding.etEmail.getText().length() == 0) {
+            String cachedEmail = session.getEmail();
+            if (!cachedEmail.isEmpty()) {
+                binding.etEmail.setText(cachedEmail);
+                binding.tvAvatarInitial.setText(String.valueOf(cachedEmail.charAt(0)).toUpperCase());
+            }
+        }
+
         viewModel.loadProfile(session.getUserId());
     }
 

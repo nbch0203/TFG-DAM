@@ -303,16 +303,6 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_logout) {
-            stopGpsService();
-            logout();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void logout() {
         session.clearSession();
         Intent intent = new Intent(this, LoginActivity.class);
