@@ -53,6 +53,18 @@
             Última actualización: {{ tiempoActualizacion }}
           </p>
         </div>
+
+        <!-- Selector de hijo dentro del mapa -->
+        <div class="child-selector-row">
+          <label for="child-selector">👦 Seguir hijo:</label>
+          <select id="child-selector" v-model="hijoSeleccionado" class="child-selector">
+            <option :value="null">— Ver autobús seleccionado —</option>
+            <option v-for="hijo in hijosDelPadre" :key="hijo.id" :value="hijo.id">
+              {{ hijo.nombre }} {{ hijo.apellidos }}
+              <template v-if="hijo.stop_nombre"> · {{ hijo.stop_nombre }}</template>
+            </option>
+          </select>
+        </div>
         
         <div id="bus-map" class="map" style="height: 400px; width: 100%; border-radius: 8px; margin-top: 1rem;"></div>
         
@@ -128,6 +140,7 @@ import { getApiUrl } from '../utils/api.js'
 const autobusesDelPadre = ref([])
 const hijosDelPadre = ref([])
 const autobusPadreSeleccionado = ref(null)
+const hijoSeleccionado = ref(null)
 const cargando = ref(true)
 const tiempoActualizacion = ref('')
 let mapa = null
@@ -249,9 +262,15 @@ async function recargarDatos() {
     const apiUrl = getApiUrl()
     if (!parentId) return
     
-    const busesRes = await fetch(`${apiUrl}/parent/${parentId}/buses`)
+    const [busesRes, childrenRes] = await Promise.all([
+      fetch(`${apiUrl}/parent/${parentId}/buses`),
+      fetch(`${apiUrl}/parent/${parentId}/children`)
+    ])
     if (busesRes.ok) {
       autobusesDelPadre.value = await busesRes.json()
+    }
+    if (childrenRes.ok) {
+      hijosDelPadre.value = await childrenRes.json()
     }
     
     actualizarTiempo()
@@ -284,6 +303,15 @@ watch(() => autobusPadre.value, (newBus) => {
     mostrarMapa(lat, lon)
   }
 }, { immediate: true })
+
+// When the parent picks a child, auto-switch to that child's bus
+watch(hijoSeleccionado, (hijoId) => {
+  if (!hijoId) return
+  const hijo = hijosDelPadre.value.find(h => h.id === hijoId)
+  if (hijo?.bus_id) {
+    autobusPadreSeleccionado.value = hijo.bus_id
+  }
+})
 </script>
 
 <style scoped>
@@ -309,6 +337,9 @@ watch(() => autobusPadre.value, (newBus) => {
 .map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .map-header h3 { margin: 0; color: #333; }
 .update-time { font-size: 12px; color: #999; margin: 0; }
+.child-selector-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.child-selector-row label { font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; }
+.child-selector { flex: 1; min-width: 200px; padding: 0.6rem 0.8rem; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
 .no-location { background: #fff3cd; color: #856404; padding: 1.5rem; border-radius: 6px; margin-top: 1rem; text-align: center; }
 .location-info { background: #f9f9f9; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-size: 14px; }
 .location-info p { margin: 0.5rem 0; }
