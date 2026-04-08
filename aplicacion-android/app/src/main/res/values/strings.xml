@@ -90,4 +90,5 @@
     <string name="profile_password_required">La contraseña es obligatoria</string>
     <string name="profile_password_min_length">La contraseña debe tener al menos 6 caracteres</string>
     <string name="profile_passwords_dont_match">Las contraseñas no coinciden</string>
+    <string name="profile_logout_confirm">¿Seguro que quieres cerrar sesión?</string>
 </resources>

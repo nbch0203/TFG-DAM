@@ -1,9 +1,11 @@
 package com.schoolsafetrack.app.ui.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -11,6 +13,7 @@ import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.model.UserProfile;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityProfileBinding;
+import com.schoolsafetrack.app.ui.login.LoginActivity;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -47,6 +50,7 @@ public class ProfileActivity extends AppCompatActivity {
             binding.progressBar.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE);
             binding.btnSaveProfile.setEnabled(!Boolean.TRUE.equals(loading));
             binding.btnChangePassword.setEnabled(!Boolean.TRUE.equals(loading));
+            binding.btnLogout.setEnabled(!Boolean.TRUE.equals(loading));
         });
 
         viewModel.getProfile().observe(this, this::populateUi);
@@ -95,6 +99,24 @@ public class ProfileActivity extends AppCompatActivity {
     private void setupButtons() {
         binding.btnSaveProfile.setOnClickListener(v -> savePersonalData());
         binding.btnChangePassword.setOnClickListener(v -> changePassword());
+        binding.btnLogout.setOnClickListener(v -> confirmLogout());
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.logout)
+                .setMessage(R.string.profile_logout_confirm)
+                .setPositiveButton(R.string.yes, (dialog, which) -> logout())
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void logout() {
+        session.clearSession();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void savePersonalData() {
