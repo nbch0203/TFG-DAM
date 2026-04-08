@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_profile"
         android:title="@string/profile_title"
-        android:icon="@drawable/ic_account_circle"
+        app:actionLayout="@layout/toolbar_profile_avatar"
         app:showAsAction="always" />
 
     <item

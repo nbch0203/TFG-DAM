@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,14 +21,14 @@ import com.schoolsafetrack.app.data.model.Child;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityParentMainBinding;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
+import com.schoolsafetrack.app.ui.profile.ProfileActivity;
+import com.schoolsafetrack.app.ui.profile.ProfileViewModel;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
-
-import com.schoolsafetrack.app.ui.profile.ProfileActivity;
 
 import java.util.List;
 
@@ -38,8 +39,10 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
 
     private ActivityParentMainBinding binding;
     private ParentViewModel viewModel;
+    private ProfileViewModel profileViewModel;
     private SessionManager session;
     private ChildrenAdapter childrenAdapter;
+    private TextView tvToolbarAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
 
         session = new SessionManager(this);
         viewModel = new ViewModelProvider(this).get(ParentViewModel.class);
+        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         setupToolbar();
         setupTabs();
@@ -64,6 +68,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         long parentId = session.getUserId();
         viewModel.loadChildren(parentId);
         viewModel.loadBuses(parentId);
+        profileViewModel.loadProfile(parentId);
     }
 
     private void setupToolbar() {
@@ -130,6 +135,19 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         viewModel.getErrorMessage().observe(this, msg -> {
             if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         });
+
+        profileViewModel.getProfile().observe(this, profile -> {
+            if (profile == null || tvToolbarAvatar == null) return;
+            String initial;
+            if (profile.getNombre() != null && !profile.getNombre().isEmpty()) {
+                initial = String.valueOf(profile.getNombre().charAt(0)).toUpperCase();
+            } else if (profile.getEmail() != null && !profile.getEmail().isEmpty()) {
+                initial = String.valueOf(profile.getEmail().charAt(0)).toUpperCase();
+            } else {
+                return;
+            }
+            tvToolbarAvatar.setText(initial);
+        });
     }
 
     /** Callback del ChildrenAdapter — navega al detalle del hijo. */
@@ -191,15 +209,24 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem profileItem = menu.findItem(R.id.action_profile);
+        if (profileItem != null) {
+            View actionView = profileItem.getActionView();
+            if (actionView != null) {
+                tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
+                String email = session.getEmail();
+                if (tvToolbarAvatar != null && !email.isEmpty()) {
+                    tvToolbarAvatar.setText(String.valueOf(email.charAt(0)).toUpperCase());
+                }
+                actionView.setOnClickListener(v ->
+                        startActivity(new Intent(this, ProfileActivity.class)));
+            }
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_profile) {
-            startActivity(new Intent(this, ProfileActivity.class));
-            return true;
-        }
         if (item.getItemId() == R.id.action_logout) {
             logout();
             return true;
@@ -219,6 +246,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     protected void onResume() {
         super.onResume();
         binding.mapView.onResume();
+        profileViewModel.loadProfile(session.getUserId());
     }
 
     @Override
