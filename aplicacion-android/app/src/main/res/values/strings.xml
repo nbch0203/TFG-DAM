@@ -1,44 +1,76 @@
 <resources>
     <string name="app_name">SchoolSafeTrack</string>
+    <string name="app_tagline">Seguimiento escolar seguro</string>
 
     <!-- Login -->
     <string name="email">Correo electrónico</string>
     <string name="password">Contraseña</string>
     <string name="login">Iniciar sesión</string>
     <string name="logout">Cerrar sesión</string>
+    <string name="welcome_back">¡Bienvenido de nuevo!</string>
+    <string name="login_subtitle">Accede a tu cuenta para continuar</string>
 
     <!-- Parent panel -->
-    <string name="parent_panel">Panel del Padre</string>
-    <string name="tab_children">Mis hijos</string>
+    <string name="parent_panel">Mis hijos</string>
+    <string name="tab_children">Hijos</string>
     <string name="tab_map">Seguimiento</string>
     <string name="no_children">No hay alumnos registrados</string>
     <string name="stop_not_assigned">Parada sin asignar</string>
     <string name="stop">Parada</string>
+    <string name="bus_tracking">Seguimiento del bus</string>
+    <string name="no_buses_active">No hay buses activos en este momento</string>
+    <string name="refresh">Actualizar</string>
+
+    <!-- Child detail -->
+    <string name="child_detail">Datos del alumno</string>
+    <string name="personal_data">Información personal</string>
+    <string name="birth_date">Fecha de nacimiento</string>
+    <string name="course">Curso</string>
+    <string name="school">Colegio</string>
+    <string name="stop_section">Parada asignada</string>
+    <string name="route_incidents">Incidencias en su trayecto</string>
+    <string name="no_incidents">Sin incidencias registradas</string>
+    <string name="incident_resolved">Resuelta</string>
+    <string name="incident_pending">Pendiente</string>
+    <string name="date">Fecha</string>
+    <string name="not_available">No disponible</string>
+
+    <!-- Incident types -->
+    <string name="incident_type_retraso">Retraso</string>
+    <string name="incident_type_mecanico">Avería mecánica</string>
+    <string name="incident_type_accidente">Accidente</string>
+    <string name="incident_type_clima">Condiciones climáticas</string>
+    <string name="incident_type_otro">Otra incidencia</string>
 
     <!-- Driver panel -->
-    <string name="driver_panel">Panel del Conductor</string>
+    <string name="driver_panel">Mi ruta</string>
     <string name="no_route_today">No hay ruta asignada para hoy</string>
-    <string name="stops">Paradas</string>
+    <string name="stops">Paradas de la ruta</string>
     <string name="arrival">Llegada</string>
     <string name="departure">Salida</string>
-    <string name="report_incident">Incidencia</string>
+    <string name="report_incident">Reportar incidencia</string>
     <string name="finish_route">Finalizar ruta</string>
     <string name="finish_route_confirm">¿Confirmas que has finalizado la ruta?</string>
     <string name="incident_type">Tipo de incidencia</string>
-    <string name="description">Descripción</string>
+    <string name="description">Descripción de la incidencia</string>
     <string name="description_required">La descripción es obligatoria</string>
     <string name="send">Enviar</string>
     <string name="cancel">Cancelar</string>
-    <string name="yes">Sí</string>
+    <string name="yes">Confirmar</string>
+    <string name="route_status">Estado de la ruta</string>
+    <string name="bus_plate">Matrícula</string>
+    <string name="schedule">Horario</string>
 
     <!-- GPS Service -->
     <string name="gps_channel_name">Seguimiento GPS</string>
     <string name="gps_channel_description">Canal para el seguimiento GPS del conductor</string>
-    <string name="gps_notification_title">SchoolSafeTrack</string>
+    <string name="gps_notification_title">SchoolSafeTrack activo</string>
     <string name="gps_notification_text">Enviando ubicación en tiempo real…</string>
 
     <!-- Generic -->
     <string name="action_success">Operación completada correctamente</string>
     <string name="action_error">Ha ocurrido un error</string>
     <string name="location_permission_denied">Sin permiso de ubicación el GPS no funcionará</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_loading">Error al cargar los datos</string>
 </resources>

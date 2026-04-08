@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.schoolsafetrack.app.data.model.Bus;
 import com.schoolsafetrack.app.data.model.Child;
+import com.schoolsafetrack.app.data.model.Incident;
 import com.schoolsafetrack.app.data.network.RetrofitClient;
 
 import java.util.List;
@@ -57,6 +58,29 @@ public class ParentRepository {
                     @Override
                     public void onFailure(Call<List<Bus>> call, Throwable t) {
                         errorMessage.postValue("Error de red: " + t.getMessage());
+                    }
+                });
+    }
+
+    /** Carga las incidencias de la ruta de un hijo concreto. */
+    public void loadChildIncidents(long parentId, long childId,
+                                   MutableLiveData<List<Incident>> result,
+                                   MutableLiveData<String> error) {
+        RetrofitClient.getInstance().getApiService()
+                .getChildIncidents(parentId, childId)
+                .enqueue(new Callback<List<Incident>>() {
+                    @Override
+                    public void onResponse(Call<List<Incident>> call, Response<List<Incident>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            result.postValue(response.body());
+                        } else {
+                            error.postValue("Error al cargar incidencias");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Incident>> call, Throwable t) {
+                        error.postValue("Error de red: " + t.getMessage());
                     }
                 });
     }

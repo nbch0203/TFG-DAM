@@ -54,6 +54,12 @@
             android:name=".ui.parent.ParentMainActivity"
             android:exported="false" />
 
+        <!-- Detalle del hijo (desde panel del padre) -->
+        <activity
+            android:name=".ui.parent.ChildDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.parent.ParentMainActivity" />
+
         <!-- Panel del conductor -->
         <activity
             android:name=".ui.driver.DriverMainActivity"
