@@ -17,7 +17,7 @@ public class ProfileRepository {
     public void loadProfile(long userId,
                             MutableLiveData<UserProfile> result,
                             MutableLiveData<String> error) {
-        RetrofitClient.getInstance().getApi()
+        RetrofitClient.getInstance().getApiService()
                 .getUserProfile(userId)
                 .enqueue(new Callback<UserProfile>() {
                     @Override
@@ -40,7 +40,7 @@ public class ProfileRepository {
                               Map<String, String> fields,
                               MutableLiveData<UserProfile> result,
                               MutableLiveData<String> error) {
-        RetrofitClient.getInstance().getApi()
+        RetrofitClient.getInstance().getApiService()
                 .updateProfile(userId, fields)
                 .enqueue(new Callback<UpdateProfileResponse>() {
                     @Override
