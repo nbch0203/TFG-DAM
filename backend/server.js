@@ -124,6 +124,25 @@ const ensureOperationalTables = async () => {
     }
   }
 
+  // Corregir usuarios de prueba que tienen el hash de contraseña placeholder '$2a$10$YourHashedPasswordHere'.
+  // Estos usuarios no pueden iniciar sesión porque el hash no es válido.
+  // Se les asigna la contraseña 'password123' como contraseña de prueba.
+  try {
+    const [usersWithPlaceholder] = await pool.query(
+      `SELECT id FROM users WHERE password = '$2a$10$YourHashedPasswordHere'`
+    );
+    if (usersWithPlaceholder.length > 0) {
+      const fixedHash = await bcrypt.hash('password123', 10);
+      await pool.query(
+        `UPDATE users SET password = ? WHERE password = '$2a$10$YourHashedPasswordHere'`,
+        [fixedHash]
+      );
+      console.log(`Migración: contraseña de ${usersWithPlaceholder.length} usuario(s) de prueba corregida a 'password123'.`);
+    }
+  } catch (err) {
+    console.warn('No se pudo corregir contraseñas de prueba:', err.message);
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schools (
       id BIGINT NOT NULL AUTO_INCREMENT,
