@@ -90,9 +90,10 @@ public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.View
             // Fecha formateada
             tvFecha.setText(formatDate(incident.getCreatedAt()));
 
-            // Color del icono según tipo
+            // Color del icono según tipo (mutate para no afectar a otros items)
             int bgColor = incidentBgColor(ctx, incident.getTipo());
-            ivIcon.getBackground().setTint(bgColor);
+            android.graphics.drawable.Drawable bg = ivIcon.getBackground().mutate();
+            bg.setTint(bgColor);
         }
 
         private String tipoLegible(Context ctx, String tipo) {

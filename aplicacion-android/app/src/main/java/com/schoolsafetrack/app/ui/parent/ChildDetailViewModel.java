@@ -23,9 +23,19 @@ public class ChildDetailViewModel extends ViewModel {
 
     public void loadIncidents(long parentId, long childId) {
         loading.setValue(true);
-        repository.loadChildIncidents(parentId, childId, incidents, errorMessage);
-        // Ocultar loader cuando llega respuesta
-        incidents.observeForever(i -> loading.setValue(false));
-        errorMessage.observeForever(e -> loading.setValue(false));
+        MutableLiveData<List<Incident>> result = new MutableLiveData<>();
+        MutableLiveData<String> error = new MutableLiveData<>();
+
+        repository.loadChildIncidents(parentId, childId, result, error);
+
+        // Observamos los resultados temporales para rellenar los LiveData expuestos
+        result.observeForever(list -> {
+            incidents.postValue(list);
+            loading.postValue(false);
+        });
+        error.observeForever(msg -> {
+            errorMessage.postValue(msg);
+            loading.postValue(false);
+        });
     }
 }

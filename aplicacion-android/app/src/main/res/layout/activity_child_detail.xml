@@ -20,7 +20,7 @@
             android:background="@color/primary_blue"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:navigationIcon="@drawable/ic_chevron_right" />
+            app:navigationIcon="@drawable/ic_arrow_back_white" />
 
         <!-- Avatar grande y nombre del alumno -->
         <LinearLayout
