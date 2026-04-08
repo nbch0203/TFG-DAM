@@ -95,8 +95,6 @@ public class ProfileActivity extends AppCompatActivity {
         }
         binding.tvAvatarInitial.setText(initial);
         binding.tvFullName.setText(profile.getFullName());
-        binding.tvRoleLabel.setText(profile.getRoleLabel());
-        binding.tvRole.setText(profile.getRoleLabel());
 
         binding.tvNombreValue.setText(profile.getNombre() != null ? profile.getNombre() : "");
         binding.tvApellidosValue.setText(profile.getApellidos() != null ? profile.getApellidos() : "");
