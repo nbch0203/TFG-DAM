@@ -1,0 +1,74 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-schoolsafetrack}
+      MYSQL_USER: ${MYSQL_USER:-tfg_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-tfg_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./backend/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    environment:
+      DB_HOST: ${BACKEND_DB_HOST:-mysql}
+      DB_USER: ${BACKEND_DB_USER:-tfg_user}
+      DB_PASSWORD: ${BACKEND_DB_PASSWORD:-tfg_password}
+      DB_NAME: ${BACKEND_DB_NAME:-schoolsafetrack}
+      DB_PORT: ${BACKEND_DB_PORT:-3306}
+      PORT: ${BACKEND_PORT:-3000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: ["node", "server.js"]
+
+  frontend:
+    build: ./frontend-web
+    container_name: frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - VITE_API_URL=${FRONTEND_VITE_API_URL:-http://localhost:3000/api}
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=120
+    volumes:
+      - ./frontend-web/src:/usr/src/app/src
+      - ./frontend-web/index.html:/usr/src/app/index.html
+      - ./frontend-web/public:/usr/src/app/public
+      - ./frontend-web/postcss.config.js:/usr/src/app/postcss.config.js
+      - ./frontend-web/tailwind.config.js:/usr/src/app/tailwind.config.js
+      - ./frontend-web/vite.config.js:/usr/src/app/vite.config.js
+      - /usr/src/app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+volumes:
+  db_data:
