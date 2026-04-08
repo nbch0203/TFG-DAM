@@ -1355,12 +1355,19 @@ app.get('/api/parent/:parentId/buses', async (req, res) => {
   }
 });
 
-// Obtener hijos de un padre
+// Obtener hijos de un padre (incluye bus_id del día para seguimiento en tiempo real)
 app.get('/api/parent/:parentId/children', (req, res) => {
   findAll(res, `
-    SELECT s.*, st.nombre AS stop_nombre, st.direccion AS stop_direccion, st.latitud, st.longitud
+    SELECT s.*,
+           st.nombre AS stop_nombre, st.direccion AS stop_direccion,
+           st.latitud, st.longitud,
+           ra.bus_id
     FROM students s
     LEFT JOIN stops st ON s.stop_id = st.id
+    LEFT JOIN route_assignments ra
+           ON ra.route_id = st.route_id
+          AND ra.fecha = CURDATE()
+          AND ra.estado IN ('PROGRAMADA', 'EN_CURSO')
     WHERE s.parent_id = ? AND s.activo = 1
   `, [req.params.parentId]);
 });
