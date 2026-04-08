@@ -103,6 +103,27 @@ const ensureOperationalTables = async () => {
     console.warn('No se pudo modificar columna role:', err.message);
   }
 
+  // Asegurar que las columnas nombre y apellidos existen en la tabla users
+  const usersHasNombre = await columnExists('users', 'nombre');
+  if (!usersHasNombre) {
+    try {
+      await pool.query(`ALTER TABLE users ADD COLUMN nombre VARCHAR(100) NOT NULL DEFAULT '' AFTER password`);
+      // Inicializar nombre con el email del usuario como fallback
+      await pool.query(`UPDATE users SET nombre = email WHERE nombre = ''`);
+    } catch (err) {
+      console.warn('No se pudo añadir columna nombre a users:', err.message);
+    }
+  }
+
+  const usersHasApellidos = await columnExists('users', 'apellidos');
+  if (!usersHasApellidos) {
+    try {
+      await pool.query(`ALTER TABLE users ADD COLUMN apellidos VARCHAR(100) NULL AFTER nombre`);
+    } catch (err) {
+      console.warn('No se pudo añadir columna apellidos a users:', err.message);
+    }
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schools (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -657,17 +678,28 @@ app.patch('/api/users/:id/profile', async (req, res) => {
     );
     if (current.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const newNombre   = nombre   !== undefined ? String(nombre).trim()   : current[0].nombre;
-    const newApellidos = apellidos !== undefined ? String(apellidos).trim() : current[0].apellidos;
-    const newEmail    = email    !== undefined ? String(email).trim()    : current[0].email;
+    // Si el nuevo valor es vacío, mantener el valor actual en lugar de sobreescribir con null/vacío
+    const newNombre   = (nombre   !== undefined && String(nombre).trim()   !== '') ? String(nombre).trim()   : current[0].nombre;
+    const newApellidos = (apellidos !== undefined && String(apellidos).trim() !== '') ? String(apellidos).trim() : current[0].apellidos;
+    const newEmail    = (email    !== undefined && String(email).trim()    !== '') ? String(email).trim()    : current[0].email;
+
+    // nombre es NOT NULL en la BD, no permitir que quede vacío
+    if (!newNombre) {
+      return res.status(400).json({ error: 'El nombre no puede estar vacío' });
+    }
+
+    // email es NOT NULL en la BD, no permitir que quede vacío
+    if (!newEmail) {
+      return res.status(400).json({ error: 'El correo no puede estar vacío' });
+    }
 
     // Validación mínima de email
-    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
       return res.status(400).json({ error: 'Formato de email no válido' });
     }
 
     let query = 'UPDATE users SET nombre = ?, apellidos = ?, email = ?';
-    const params = [newNombre || null, newApellidos || null, newEmail];
+    const params = [newNombre, newApellidos || null, newEmail];
 
     if (password) {
       if (String(password).length < 6) {

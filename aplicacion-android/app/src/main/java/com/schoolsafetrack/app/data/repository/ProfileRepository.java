@@ -25,6 +25,8 @@ public class ProfileRepository {
                     public void onResponse(Call<UserProfile> call, Response<UserProfile> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             callback.onSuccess(response.body());
+                        } else if (response.code() == 404) {
+                            callback.onError("No se encontró tu perfil. Por favor, cierra sesión y vuelve a entrar.");
                         } else {
                             callback.onError("Error al cargar el perfil (" + response.code() + ")");
                         }
@@ -55,7 +57,21 @@ public class ProfileRepository {
                                         ? body.getError() : "Error al actualizar el perfil");
                             }
                         } else {
-                            callback.onError("Error al actualizar (" + response.code() + ")");
+                            // Intentar leer el mensaje de error del servidor
+                            String errorMsg = "Error al actualizar (" + response.code() + ")";
+                            try {
+                                if (response.errorBody() != null) {
+                                    String rawError = response.errorBody().string();
+                                    // Extraer el campo "error" del JSON simple {"error":"..."}
+                                    int start = rawError.indexOf("\"error\":\"");
+                                    if (start >= 0) {
+                                        start += 9;
+                                        int end = rawError.indexOf("\"", start);
+                                        if (end > start) errorMsg = rawError.substring(start, end);
+                                    }
+                                }
+                            } catch (Exception ignored) { }
+                            callback.onError(errorMsg);
                         }
                     }
 
