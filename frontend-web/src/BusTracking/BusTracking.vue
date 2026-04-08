@@ -30,21 +30,18 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { io } from 'socket.io-client'
 import { getApiUrl } from '../utils/api.js'
 
 const buses = ref([])
 const cargando = ref(true)
 const selectedBusId = ref(null)
 
-// Socket.io
-let socket = null
+let pollInterval = null
 
 const selectedBus = computed(() => buses.value.find(b => b.id === selectedBusId.value))
 const hasLocation = computed(() => selectedBus.value && selectedBus.value.lat && selectedBus.value.lon)
 
 async function cargarBuses() {
-  cargando.value = true
   try {
     const apiUrl = getApiUrl()
     const res = await fetch(`${apiUrl}/buses`)
@@ -55,25 +52,20 @@ async function cargarBuses() {
     }
   } catch {
     buses.value = []
-  } finally {
-    cargando.value = false
   }
 }
 
-// Actualiza la posición de un bus en el array buses
-function actualizarPosicionBus(data) {
-  // data: { id, lat, lon, ... }
-  const idx = buses.value.findIndex(b => b.id === data.id)
-  if (idx !== -1) {
-    buses.value[idx] = { ...buses.value[idx], ...data }
-  }
+async function cargarBusesInicial() {
+  cargando.value = true
+  await cargarBuses()
+  cargando.value = false
 }
 
 let map = null
 let marker = null
 
 function showMap(lat, lon) {
-  if (!window.L) return;
+  if (!window.L) return
   if (!map) {
     map = window.L.map('bus-map').setView([lat, lon], 15)
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -81,8 +73,9 @@ function showMap(lat, lon) {
       attribution: '© OpenStreetMap'
     }).addTo(map)
     marker = window.L.marker([lat, lon]).addTo(map)
+    if (selectedBus.value) marker.bindPopup(selectedBus.value.matricula)
   } else {
-    map.setView([lat, lon], 15)
+    // Only move the marker — do NOT re-center so the user can freely pan/zoom
     marker.setLatLng([lat, lon])
   }
 }
@@ -100,7 +93,8 @@ watch(selectedBus, (bus) => {
 })
 
 onMounted(() => {
-  cargarBuses()
+  cargarBusesInicial()
+
   // Cargar Leaflet si no está presente
   if (!window.L) {
     const link = document.createElement('link')
@@ -112,23 +106,19 @@ onMounted(() => {
     document.body.appendChild(script)
   }
 
-  // Conectar a WebSocket para ubicaciones en tiempo real
-  const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
-  socket = io(wsUrl)
-  socket.on('bus-location', (data) => {
-    // data: { id, lat, lon, ... }
-    actualizarPosicionBus(data)
-    // Si el bus actualizado es el seleccionado, actualiza el mapa
-    if (selectedBus.value && data.id === selectedBus.value.id && data.lat && data.lon) {
-      showMap(data.lat, data.lon)
-    }
-  })
+  // Poll bus positions every second for real-time map updates
+  pollInterval = setInterval(cargarBuses, 1000)
 })
 
 onBeforeUnmount(() => {
-  if (socket) {
-    socket.disconnect()
-    socket = null
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
+  if (map) {
+    map.remove()
+    map = null
+    marker = null
   }
 })
 </script>
