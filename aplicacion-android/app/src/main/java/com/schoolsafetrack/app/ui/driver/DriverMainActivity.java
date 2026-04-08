@@ -1,0 +1,267 @@
+package com.schoolsafetrack.app.ui.driver;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.schoolsafetrack.app.R;
+import com.schoolsafetrack.app.data.model.CheckIn;
+import com.schoolsafetrack.app.data.model.RouteInfo;
+import com.schoolsafetrack.app.data.model.Stop;
+import com.schoolsafetrack.app.data.model.TodayRouteResponse;
+import com.schoolsafetrack.app.data.repository.SessionManager;
+import com.schoolsafetrack.app.databinding.ActivityDriverMainBinding;
+import com.schoolsafetrack.app.databinding.DialogIncidentBinding;
+import com.schoolsafetrack.app.service.GpsTrackingService;
+import com.schoolsafetrack.app.ui.login.LoginActivity;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class DriverMainActivity extends AppCompatActivity implements StopsAdapter.StopActionListener {
+
+    private static final int LOCATION_PERMISSION_REQUEST = 100;
+
+    private ActivityDriverMainBinding binding;
+    private DriverViewModel viewModel;
+    private SessionManager session;
+    private StopsAdapter stopsAdapter;
+
+    private RouteInfo currentRoute;
+    private long busId = -1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityDriverMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        session = new SessionManager(this);
+        viewModel = new ViewModelProvider(this).get(DriverViewModel.class);
+
+        setupToolbar();
+        setupRecyclerView();
+        observeViewModel();
+        requestLocationPermission();
+
+        long driverId = session.getUserId();
+        binding.progressBar.setVisibility(View.VISIBLE);
+        viewModel.loadTodayRoute(driverId);
+    }
+
+    private void setupToolbar() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.driver_panel);
+        }
+        binding.toolbar.inflateMenu(R.menu.menu_main);
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_logout) {
+                stopGpsService();
+                logout();
+                return true;
+            }
+            return false;
+        });
+
+        binding.btnFinishRoute.setOnClickListener(v -> confirmFinishRoute());
+        binding.btnReportIncident.setOnClickListener(v -> showIncidentDialog());
+    }
+
+    private void setupRecyclerView() {
+        stopsAdapter = new StopsAdapter();
+        stopsAdapter.setListener(this);
+        binding.rvStops.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvStops.setAdapter(stopsAdapter);
+    }
+
+    private void observeViewModel() {
+        viewModel.getTodayRoute().observe(this, response -> {
+            binding.progressBar.setVisibility(View.GONE);
+            if (response == null) return;
+
+            currentRoute = response.getRoute();
+            if (currentRoute == null) {
+                binding.cardRoute.setVisibility(View.GONE);
+                binding.tvNoRoute.setVisibility(View.VISIBLE);
+                binding.btnFinishRoute.setEnabled(false);
+                binding.btnReportIncident.setEnabled(false);
+                return;
+            }
+
+            binding.cardRoute.setVisibility(View.VISIBLE);
+            binding.tvNoRoute.setVisibility(View.GONE);
+            binding.tvRouteName.setText(currentRoute.getRouteNombre());
+            binding.tvRouteStatus.setText(currentRoute.getEstado());
+            binding.tvBusInfo.setText(
+                    currentRoute.getMatricula() + " · " + currentRoute.getMarca()
+                            + " " + currentRoute.getModelo());
+            binding.tvHorario.setText(
+                    currentRoute.getHorarioInicio() + " – " + currentRoute.getHorarioFin());
+
+            busId = currentRoute.getBusId();
+
+            boolean routeActive = "EN_CURSO".equals(currentRoute.getEstado())
+                    || "PROGRAMADA".equals(currentRoute.getEstado());
+            binding.btnFinishRoute.setEnabled(routeActive);
+            binding.btnReportIncident.setEnabled(routeActive);
+
+            Set<Long> completedIds = buildCompletedStopIds(response.getCheckins());
+            stopsAdapter.setStops(response.getStops(), completedIds);
+
+            if (routeActive && busId > 0) {
+                startGpsService(busId);
+            }
+        });
+
+        viewModel.getActionResult().observe(this, result -> {
+            if (result != null) {
+                String msg = result.isSuccess()
+                        ? getString(R.string.action_success)
+                        : getString(R.string.action_error);
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                // Recargar ruta para reflejar cambios
+                viewModel.loadTodayRoute(session.getUserId());
+            }
+        });
+
+        viewModel.getErrorMessage().observe(this, msg -> {
+            binding.progressBar.setVisibility(View.GONE);
+            if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private Set<Long> buildCompletedStopIds(List<CheckIn> checkins) {
+        Set<Long> ids = new HashSet<>();
+        if (checkins != null) {
+            for (CheckIn c : checkins) {
+                if ("DEPARTURE".equals(c.getAction())) {
+                    ids.add(c.getStopId());
+                }
+            }
+        }
+        return ids;
+    }
+
+    @Override
+    public void onArrival(Stop stop) {
+        if (currentRoute == null) return;
+        viewModel.checkIn(currentRoute.getAssignmentId(), stop.getId(),
+                session.getUserId(), "ARRIVAL", null);
+    }
+
+    @Override
+    public void onDeparture(Stop stop) {
+        if (currentRoute == null) return;
+        viewModel.checkIn(currentRoute.getAssignmentId(), stop.getId(),
+                session.getUserId(), "DEPARTURE", null);
+    }
+
+    private void showIncidentDialog() {
+        if (currentRoute == null) return;
+
+        DialogIncidentBinding dialogBinding = DialogIncidentBinding.inflate(getLayoutInflater());
+        String[] tipos = {"RETRASO", "MECANICO", "ACCIDENTE", "CLIMA", "OTRO"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, tipos);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerTipo.setAdapter(adapter);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.report_incident)
+                .setView(dialogBinding.getRoot())
+                .setPositiveButton(R.string.send, (dialog, which) -> {
+                    String tipo = tipos[dialogBinding.spinnerTipo.getSelectedItemPosition()];
+                    String desc = dialogBinding.etDescription.getText().toString().trim();
+                    if (desc.isEmpty()) {
+                        Toast.makeText(this, R.string.description_required, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    viewModel.reportIncident(
+                            currentRoute.getAssignmentId(),
+                            session.getUserId(),
+                            tipo, desc, null, null);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void confirmFinishRoute() {
+        if (currentRoute == null) return;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.finish_route)
+                .setMessage(R.string.finish_route_confirm)
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    stopGpsService();
+                    viewModel.finishRoute(currentRoute.getAssignmentId(),
+                            session.getUserId(), null);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void startGpsService(long busId) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Intent serviceIntent = new Intent(this, GpsTrackingService.class);
+            serviceIntent.putExtra(GpsTrackingService.EXTRA_BUS_ID, busId);
+            serviceIntent.putExtra(GpsTrackingService.EXTRA_DRIVER_ID, session.getUserId());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        }
+    }
+
+    private void stopGpsService() {
+        stopService(new Intent(this, GpsTrackingService.class));
+    }
+
+    private void requestLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    },
+                    LOCATION_PERMISSION_REQUEST);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (busId > 0) startGpsService(busId);
+            } else {
+                Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void logout() {
+        session.clearSession();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+}
