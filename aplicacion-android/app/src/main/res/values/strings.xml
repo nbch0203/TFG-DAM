@@ -73,4 +73,21 @@
     <string name="location_permission_denied">Sin permiso de ubicación el GPS no funcionará</string>
     <string name="loading">Cargando…</string>
     <string name="error_loading">Error al cargar los datos</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Mi perfil</string>
+    <string name="profile_personal_data">Datos personales</string>
+    <string name="profile_nombre">Nombre</string>
+    <string name="profile_apellidos">Apellidos</string>
+    <string name="profile_role">Rol en la aplicación</string>
+    <string name="profile_save">Guardar cambios</string>
+    <string name="profile_change_password">Cambiar contraseña</string>
+    <string name="profile_new_password">Nueva contraseña</string>
+    <string name="profile_confirm_password">Confirmar nueva contraseña</string>
+    <string name="profile_update_password">Actualizar contraseña</string>
+    <string name="profile_saved_ok">Datos guardados correctamente</string>
+    <string name="profile_email_required">El email es obligatorio</string>
+    <string name="profile_password_required">La contraseña es obligatoria</string>
+    <string name="profile_password_min_length">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="profile_passwords_dont_match">Las contraseñas no coinciden</string>
 </resources>
