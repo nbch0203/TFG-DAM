@@ -227,6 +227,19 @@ const findAll = async (res, query, params = []) => {
   }
 };
 
+// Ejecuta un SELECT devolviendo un único registro
+const findOne = async (res, query, params = []) => {
+  try {
+    const [rows] = await pool.query(query, params);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Registro no encontrado' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    handleError(res, err, 'Error al obtener dato');
+  }
+};
+
 // Ejecuta un INSERT 
 const create = async (res, query, params) => {
   try {
@@ -746,6 +759,64 @@ app.put('/api/students/:id', (req, res) => {
 // Eliminar
 app.delete('/api/students/:id', (req, res) => {
   remove(res, 'DELETE FROM students WHERE id = ?', [req.params.id]);
+});
+
+// Obtener detalle de un estudiante por ID
+app.get('/api/students/:id', (req, res) => {
+  findOne(res, `
+    SELECT s.*, st.nombre AS stop_nombre, st.direccion AS stop_direccion,
+           st.latitud, st.longitud, sc.nombre AS school_nombre,
+           u.email AS parent_email
+    FROM students s
+    LEFT JOIN stops st ON s.stop_id = st.id
+    LEFT JOIN schools sc ON s.school_id = sc.id
+    LEFT JOIN users u ON s.parent_id = u.id
+    WHERE s.id = ?
+  `, [req.params.id]);
+});
+
+// Obtener incidencias para la ruta de un alumno (del padre)
+app.get('/api/parent/:parentId/children/:childId/incidents', async (req, res) => {
+  try {
+    const { parentId, childId } = req.params;
+
+    // Verificar que el alumno pertenece a este padre
+    const [students] = await pool.query(
+      'SELECT stop_id FROM students WHERE id = ? AND parent_id = ? AND activo = 1',
+      [childId, parentId]
+    );
+
+    if (students.length === 0) {
+      return res.status(404).json({ error: 'Alumno no encontrado' });
+    }
+
+    const stopId = students[0].stop_id;
+    if (!stopId) {
+      return res.json([]);
+    }
+
+    // Obtener incidencias de los trayectos que sirven la parada del alumno
+    const [rows] = await pool.query(
+      `SELECT i.id, i.tipo, i.descripcion, i.latitud, i.longitud,
+              i.resuelto, i.created_at, i.updated_at, i.fecha_resolucion,
+              r.nombre AS route_nombre, b.matricula,
+              ra.fecha AS fecha_trayecto
+       FROM incidents i
+       INNER JOIN route_assignments ra ON i.route_assignment_id = ra.id
+       INNER JOIN routes r ON ra.route_id = r.id
+       INNER JOIN buses b ON ra.bus_id = b.id
+       WHERE ra.route_id IN (
+         SELECT DISTINCT route_id FROM stops WHERE id = ?
+       )
+       ORDER BY i.created_at DESC
+       LIMIT 50`,
+      [stopId]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    handleError(res, err, 'Error al obtener incidencias del alumno');
+  }
 });
 
 // ============================================

@@ -1,9 +1,19 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.SchoolSafeTrack" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary_blue</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/primary_blue_light</item>
+        <item name="colorSecondary">@color/accent_orange</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorSurface">@color/surface_white</item>
+        <item name="colorError">@color/error_red</item>
     </style>
 
     <style name="Theme.SchoolSafeTrack" parent="Base.Theme.SchoolSafeTrack" />
+
+    <!-- Chip de estado con colores semánticos -->
+    <style name="Widget.App.StatusChip" parent="Widget.Material3.Chip.Suggestion">
+        <item name="android:textSize">11sp</item>
+    </style>
 </resources>

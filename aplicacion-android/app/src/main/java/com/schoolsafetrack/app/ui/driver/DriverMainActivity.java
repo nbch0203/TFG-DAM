@@ -94,14 +94,14 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
 
             currentRoute = response.getRoute();
             if (currentRoute == null) {
-                binding.cardRoute.setVisibility(View.GONE);
+                binding.scrollContent.setVisibility(View.GONE);
                 binding.tvNoRoute.setVisibility(View.VISIBLE);
                 binding.btnFinishRoute.setEnabled(false);
                 binding.btnReportIncident.setEnabled(false);
                 return;
             }
 
-            binding.cardRoute.setVisibility(View.VISIBLE);
+            binding.scrollContent.setVisibility(View.VISIBLE);
             binding.tvNoRoute.setVisibility(View.GONE);
             binding.tvRouteName.setText(currentRoute.getRouteNombre());
             binding.tvRouteStatus.setText(currentRoute.getEstado());

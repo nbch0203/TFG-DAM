@@ -3,6 +3,7 @@ package com.schoolsafetrack.app.data.network;
 import com.schoolsafetrack.app.data.model.ApiResponse;
 import com.schoolsafetrack.app.data.model.Bus;
 import com.schoolsafetrack.app.data.model.Child;
+import com.schoolsafetrack.app.data.model.Incident;
 import com.schoolsafetrack.app.data.model.LoginResponse;
 import com.schoolsafetrack.app.data.model.TodayRouteResponse;
 
@@ -28,6 +29,15 @@ public interface ApiService {
 
     @GET("parent/{parentId}/buses")
     Call<List<Bus>> getParentBuses(@Path("parentId") long parentId);
+
+    @GET("parent/{parentId}/children/{childId}/incidents")
+    Call<List<Incident>> getChildIncidents(
+            @Path("parentId") long parentId,
+            @Path("childId") long childId);
+
+    // ── Alumno ────────────────────────────────────────────────────────────────
+    @GET("students/{childId}")
+    Call<Child> getStudentDetail(@Path("childId") long childId);
 
     // ── Conductor ─────────────────────────────────────────────────────────────
     @GET("driver/{driverId}/today-route")
