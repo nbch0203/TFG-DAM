@@ -19,6 +19,8 @@
     <string name="stop">Parada</string>
     <string name="bus_tracking">Seguimiento del bus</string>
     <string name="no_buses_active">No hay buses activos en este momento</string>
+    <string name="follow_child">👦 Seguir hijo:</string>
+    <string name="follow_child_all">— Todos los buses —</string>
     <string name="refresh">Actualizar</string>
 
     <!-- Child detail -->
