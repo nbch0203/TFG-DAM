@@ -3,9 +3,13 @@ package com.schoolsafetrack.app.ui.parent;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,12 +34,14 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ParentMainActivity extends AppCompatActivity implements ChildrenAdapter.OnChildClickListener {
 
     private static final int TAB_CHILDREN = 0;
     private static final int TAB_MAP = 1;
+    private static final long POLL_INTERVAL_MS = 1000L;
 
     private ActivityParentMainBinding binding;
     private ParentViewModel viewModel;
@@ -44,6 +50,15 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private ChildrenAdapter childrenAdapter;
     private TextView tvToolbarAvatar;
     private TextView tvToolbarUserName;
+
+    // Auto-refresh
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
+    private Runnable pollRunnable;
+    private boolean pollingActive = false;
+
+    // Child-follow: child id that is currently selected (null = show all)
+    private Long followedBusId = null;
+    private List<Child> latestChildren = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +79,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         setupTabs();
         setupRecyclerView();
         setupMap();
+        setupChildSpinner();
         observeViewModel();
 
         long parentId = session.getUserId();
@@ -78,7 +94,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             getSupportActionBar().setTitle(R.string.parent_panel);
         }
 
-        // Botón refrescar mapa
+        // Manual refresh button still works alongside auto-refresh
         binding.btnRefreshMap.setOnClickListener(v ->
                 viewModel.loadBuses(session.getUserId()));
     }
@@ -95,11 +111,13 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                     binding.layoutMap.setVisibility(View.GONE);
                     binding.tvEmptyChildren.setVisibility(
                             childrenAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+                    stopPolling();
                 } else {
                     binding.layoutChildren.setVisibility(View.GONE);
                     binding.layoutMap.setVisibility(View.VISIBLE);
                     binding.tvEmptyChildren.setVisibility(View.GONE);
                     binding.mapView.invalidate();
+                    startPolling();
                 }
             }
 
@@ -123,15 +141,88 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         map.getController().setCenter(new GeoPoint(40.416775, -3.703790));
     }
 
+    /** Build the "Seguir hijo" spinner with the latest children list. */
+    private void setupChildSpinner() {
+        // Initial empty adapter; populated once children are loaded
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, new ArrayList<>());
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerFollowChild.setAdapter(adapter);
+
+        binding.spinnerFollowChild.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    // "— Todos —" selected
+                    followedBusId = null;
+                } else {
+                    Child selected = latestChildren.get(position - 1);
+                    followedBusId = selected.getBusId();
+                }
+                // Re-render map immediately with current data
+                List<Bus> currentBuses = viewModel.getBuses().getValue();
+                if (currentBuses != null) updateMapWithBuses(currentBuses);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                followedBusId = null;
+            }
+        });
+    }
+
+    /** Rebuild spinner entries whenever the children list changes. */
+    private void refreshChildSpinner(List<Child> children) {
+        latestChildren = children != null ? children : new ArrayList<>();
+
+        List<String> labels = new ArrayList<>();
+        labels.add(getString(R.string.follow_child_all));
+        for (Child c : latestChildren) {
+            labels.add(c.getFullName());
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerFollowChild.setAdapter(adapter);
+    }
+
+    // ── Auto-refresh ──────────────────────────────────────────────────────────
+
+    private void startPolling() {
+        if (pollingActive) return;
+        pollingActive = true;
+        pollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!pollingActive) return;
+                viewModel.loadBuses(session.getUserId());
+                viewModel.loadChildren(session.getUserId());
+                pollHandler.postDelayed(this, POLL_INTERVAL_MS);
+            }
+        };
+        pollHandler.post(pollRunnable);
+    }
+
+    private void stopPolling() {
+        pollingActive = false;
+        if (pollRunnable != null) {
+            pollHandler.removeCallbacks(pollRunnable);
+        }
+    }
+
+    // ── ViewModel observation ─────────────────────────────────────────────────
+
     private void observeViewModel() {
         viewModel.getChildren().observe(this, children -> {
             childrenAdapter.setChildren(children);
             int count = children != null ? children.size() : 0;
             binding.tvChildrenCount.setText(count + (count == 1 ? " alumno" : " alumnos"));
             binding.tvEmptyChildren.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
+            refreshChildSpinner(children);
         });
 
-        viewModel.getBuses().observe(this, buses -> updateMapWithBuses(buses));
+        viewModel.getBuses().observe(this, this::updateMapWithBuses);
 
         viewModel.getErrorMessage().observe(this, msg -> {
             if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -183,14 +274,25 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             return;
         }
 
+        // Filter to followed bus if a child is selected
+        List<Bus> visibleBuses = new ArrayList<>();
+        for (Bus bus : buses) {
+            if (followedBusId == null || followedBusId == bus.getId()) {
+                visibleBuses.add(bus);
+            }
+        }
+
         // Icono de bus personalizado
         Drawable busIcon = ContextCompat.getDrawable(this, R.drawable.ic_bus_marker);
 
-        for (Bus bus : buses) {
+        Marker firstMarker = null;
+        for (Bus bus : visibleBuses) {
             if (bus.getLat() == null || bus.getLon() == null) continue;
 
+            GeoPoint pos = new GeoPoint(bus.getLat(), bus.getLon());
+            // Reuse existing marker if present, otherwise create new one
             Marker marker = new Marker(map);
-            marker.setPosition(new GeoPoint(bus.getLat(), bus.getLon()));
+            marker.setPosition(pos);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
             marker.setTitle(bus.getMatricula());
             String snippet = (bus.getRouteNombre() != null ? bus.getRouteNombre() : "")
@@ -200,16 +302,19 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                 marker.setIcon(busIcon);
             }
             map.getOverlays().add(marker);
+            if (firstMarker == null) firstMarker = marker;
         }
 
-        // Centrar en el primer bus con ubicación
-        buses.stream()
-                .filter(b -> b.getLat() != null && b.getLon() != null)
-                .findFirst()
-                .ifPresent(b -> {
-                    map.getController().animateTo(new GeoPoint(b.getLat(), b.getLon()));
-                    map.getController().setZoom(15.0);
-                });
+        // If a child is followed, center on that bus on first load (don't re-center on every poll)
+        if (followedBusId != null && firstMarker != null
+                && map.getZoomLevelDouble() < 14.0) {
+            map.getController().animateTo(firstMarker.getPosition());
+            map.getController().setZoom(15.0);
+        } else if (followedBusId == null && firstMarker != null
+                && map.getZoomLevelDouble() < 14.0) {
+            map.getController().animateTo(firstMarker.getPosition());
+            map.getController().setZoom(15.0);
+        }
 
         map.invalidate();
     }
@@ -250,11 +355,22 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         super.onResume();
         binding.mapView.onResume();
         profileViewModel.loadProfile(session.getUserId());
+        // Resume polling only if map tab is visible
+        if (binding.layoutMap.getVisibility() == View.VISIBLE) {
+            startPolling();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         binding.mapView.onPause();
+        stopPolling();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPolling();
     }
 }

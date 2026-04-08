@@ -36,6 +36,9 @@ public class Child {
     @SerializedName("school_nombre")
     private String schoolNombre;
 
+    @SerializedName("bus_id")
+    private Long busId;
+
     public long getId() { return id; }
     public String getNombre() { return nombre; }
     public String getApellidos() { return apellidos; }
@@ -47,6 +50,7 @@ public class Child {
     public Double getLatitud() { return latitud; }
     public Double getLongitud() { return longitud; }
     public String getSchoolNombre() { return schoolNombre; }
+    public Long getBusId() { return busId; }
 
     public String getFullName() {
         if (apellidos != null && !apellidos.isEmpty()) {
