@@ -3,6 +3,14 @@
 -- Host: localhost    Database: schoolsafetrack
 -- ------------------------------------------------------
 -- Server version	8.0.44
+--
+-- CREDENCIALES DE PRUEBA (contraseña: password123)
+--   padre1@example.com   (PARENT)
+--   padre2@example.com   (PARENT)
+--   conductor1@example.com (DRIVER)
+--   conductor2@example.com (DRIVER)
+--   admin@schoolsafetrack.com (ADMIN) - contraseña distinta, usa el panel web para cambiarla
+--
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -425,7 +433,8 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin@schoolsafetrack.com','$2b$10$6O.2JWO1rg1qZzMm6xE4ouKMqlwYPp7gvS8xFa.WOTBDNT0wIfTr6','Administrador','Sistema','600000000','ADMIN',1,NULL,'2025-12-29 01:13:08','2025-12-29 14:20:20'),(2,'padre1@example.com','$2a$10$YourHashedPasswordHere','Juan','GarcÃ­a LÃ³pez','611111111','PARENT',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(3,'padre2@example.com','$2a$10$YourHashedPasswordHere','MarÃ­a','MartÃ­nez Ruiz','622222222','PARENT',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(4,'conductor1@example.com','$2a$10$YourHashedPasswordHere','Carlos','RodrÃ­guez SÃ¡nchez','633333333','DRIVER',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(5,'conductor2@example.com','$2a$10$YourHashedPasswordHere','Ana','FernÃ¡ndez Torres','644444444','DRIVER',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(8,'profesorprueba@schoolsafetrack.com','$2b$10$7Wliafc5yJ8cOlHue4tiEecW2bt5Awok7QsYxJMkqurC7gXT89uwm','Profesor','Pruebas','600000002','PARENT',1,NULL,'2025-12-29 11:54:51','2025-12-29 23:07:39');
+-- Contraseña de usuarios de prueba (padre1, padre2, conductor1, conductor2): password123
+INSERT INTO `users` VALUES (1,'admin@schoolsafetrack.com','$2b$10$6O.2JWO1rg1qZzMm6xE4ouKMqlwYPp7gvS8xFa.WOTBDNT0wIfTr6','Administrador','Sistema','600000000','ADMIN',1,NULL,'2025-12-29 01:13:08','2025-12-29 14:20:20'),(2,'padre1@example.com','$2b$10$ROiHCOSFfwnOFkYZFZJjF.hLGXu7VBF2X6ytb1BB.66oaynm.V4lu','Juan','García López','611111111','PARENT',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(3,'padre2@example.com','$2b$10$ROiHCOSFfwnOFkYZFZJjF.hLGXu7VBF2X6ytb1BB.66oaynm.V4lu','María','Martínez Ruiz','622222222','PARENT',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(4,'conductor1@example.com','$2b$10$ROiHCOSFfwnOFkYZFZJjF.hLGXu7VBF2X6ytb1BB.66oaynm.V4lu','Carlos','Rodríguez Sánchez','633333333','DRIVER',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(5,'conductor2@example.com','$2b$10$ROiHCOSFfwnOFkYZFZJjF.hLGXu7VBF2X6ytb1BB.66oaynm.V4lu','Ana','Fernández Torres','644444444','DRIVER',1,NULL,'2025-12-29 01:13:08','2025-12-29 01:13:08'),(8,'profesorprueba@schoolsafetrack.com','$2b$10$7Wliafc5yJ8cOlHue4tiEecW2bt5Awok7QsYxJMkqurC7gXT89uwm','Profesor','Pruebas','600000002','PARENT',1,NULL,'2025-12-29 11:54:51','2025-12-29 23:07:39');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
