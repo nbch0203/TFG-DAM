@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +31,7 @@ import com.schoolsafetrack.app.service.GpsTrackingService;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
 
 import com.schoolsafetrack.app.ui.profile.ProfileActivity;
+import com.schoolsafetrack.app.ui.profile.ProfileViewModel;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,8 +43,10 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
 
     private ActivityDriverMainBinding binding;
     private DriverViewModel viewModel;
+    private ProfileViewModel profileViewModel;
     private SessionManager session;
     private StopsAdapter stopsAdapter;
+    private TextView tvToolbarAvatar;
 
     private RouteInfo currentRoute;
     private long busId = -1;
@@ -54,6 +59,7 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
 
         session = new SessionManager(this);
         viewModel = new ViewModelProvider(this).get(DriverViewModel.class);
+        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         setupToolbar();
         setupRecyclerView();
@@ -63,6 +69,7 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         long driverId = session.getUserId();
         binding.progressBar.setVisibility(View.VISIBLE);
         viewModel.loadTodayRoute(driverId);
+        profileViewModel.loadProfile(driverId);
     }
 
     private void setupToolbar() {
@@ -135,6 +142,19 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         viewModel.getErrorMessage().observe(this, msg -> {
             binding.progressBar.setVisibility(View.GONE);
             if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        });
+
+        profileViewModel.getProfile().observe(this, profile -> {
+            if (profile == null || tvToolbarAvatar == null) return;
+            String initial;
+            if (profile.getNombre() != null && !profile.getNombre().isEmpty()) {
+                initial = String.valueOf(profile.getNombre().charAt(0)).toUpperCase();
+            } else if (profile.getEmail() != null && !profile.getEmail().isEmpty()) {
+                initial = String.valueOf(profile.getEmail().charAt(0)).toUpperCase();
+            } else {
+                return;
+            }
+            tvToolbarAvatar.setText(initial);
         });
     }
 
@@ -255,15 +275,24 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem profileItem = menu.findItem(R.id.action_profile);
+        if (profileItem != null) {
+            View actionView = profileItem.getActionView();
+            if (actionView != null) {
+                tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
+                String email = session.getEmail();
+                if (tvToolbarAvatar != null && !email.isEmpty()) {
+                    tvToolbarAvatar.setText(String.valueOf(email.charAt(0)).toUpperCase());
+                }
+                actionView.setOnClickListener(v ->
+                        startActivity(new Intent(this, ProfileActivity.class)));
+            }
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_profile) {
-            startActivity(new Intent(this, ProfileActivity.class));
-            return true;
-        }
         if (item.getItemId() == R.id.action_logout) {
             stopGpsService();
             logout();
