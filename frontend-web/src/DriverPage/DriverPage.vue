@@ -3,6 +3,10 @@
     <header class="driver-header">
       <h1>Panel del Conductor</h1>
       <p>Gestiona tu ruta del día y reporta incidencias operativas.</p>
+      <div class="gps-status" :class="gpsActivo ? 'gps-on' : 'gps-off'">
+        {{ gpsActivo ? '📡 GPS activo — enviando posición en tiempo real' : '📡 GPS inactivo' }}
+        <span v-if="gpsError" class="gps-err"> · {{ gpsError }}</span>
+      </div>
       <button class="btn-refresh" @click="loadTodayRoute" :disabled="loadingRoute">
         {{ loadingRoute ? 'Actualizando...' : 'Actualizar ruta' }}
       </button>
@@ -130,7 +134,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getApiUrl } from '../utils/api.js'
 
 const props = defineProps({ username: String })
@@ -162,6 +166,46 @@ const incident = ref({
   latitud: '',
   longitud: ''
 })
+
+// GPS tracking
+const gpsActivo = ref(false)
+const gpsError = ref('')
+let gpsIntervalId = null
+
+function iniciarGPS() {
+  if (!navigator.geolocation) {
+    gpsError.value = 'Este navegador no soporta geolocalización.'
+    return
+  }
+  if (gpsIntervalId) return
+  gpsActivo.value = true
+  gpsError.value = ''
+  gpsIntervalId = setInterval(() => {
+    if (!todayRoute.value?.bus_id || todayRoute.value.estado === 'FINALIZADA') {
+      detenerGPS()
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords
+        fetch(`${getApiUrl()}/buses/${todayRoute.value.bus_id}/location`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: latitude, lon: longitude })
+        }).catch(() => {})
+      },
+      (err) => { gpsError.value = `GPS: ${err.message}` }
+    )
+  }, 1000)
+}
+
+function detenerGPS() {
+  if (gpsIntervalId) {
+    clearInterval(gpsIntervalId)
+    gpsIntervalId = null
+  }
+  gpsActivo.value = false
+}
 
 const normalizeDate = (value) => {
   if (!value) return null
@@ -258,6 +302,13 @@ const loadTodayRoute = async () => {
     checkins.value = (data.checkins || []).map(normalizeCheckin)
     buildLastCheckins(checkins.value)
     await loadIncidents()
+
+    // Start GPS sending when there is an active route with a bus
+    if (todayRoute.value?.bus_id && todayRoute.value.estado !== 'FINALIZADA') {
+      iniciarGPS()
+    } else {
+      detenerGPS()
+    }
   } catch (error) {
     console.error('Error al cargar ruta del conductor:', error)
     routeError.value = error?.message || 'Error cargando ruta del día'
@@ -402,6 +453,8 @@ const submitIncident = async () => {
 }
 
 onMounted(loadTodayRoute)
+
+onBeforeUnmount(detenerGPS)
 </script>
 
 <style scoped>
@@ -427,6 +480,28 @@ onMounted(loadTodayRoute)
   color: #fff;
   padding: 0.6rem 1rem;
   cursor: pointer;
+}
+
+.gps-status {
+  margin-top: 0.5rem;
+  font-size: 13px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.gps-on {
+  background: rgba(0, 200, 83, 0.25);
+  color: #a5d6a7;
+}
+
+.gps-off {
+  background: rgba(255, 255, 255, 0.12);
+  color: #b0bec5;
+}
+
+.gps-err {
+  color: #ef9a9a;
 }
 
 .btn-refresh:disabled {
