@@ -16,7 +16,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "1.13.5",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
     "pinia": "^3.0.4",
@@ -41,7 +41,7 @@
     "postcss": "^8.5.6",
     "prettier": "3.6.2",
     "tailwindcss": "^4.1.18",
-    "vite": "^7.2.4",
+    "vite": "7.3.2",
     "vite-plugin-vue-devtools": "^8.0.5"
   }
 }
