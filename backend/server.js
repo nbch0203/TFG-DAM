@@ -1307,6 +1307,20 @@ app.delete('/api/stops/:id', (req, res) => {
   remove(res, 'DELETE FROM stops WHERE id = ?', [req.params.id]);
 });
 
+// Actualizar solo el campo orden de una parada (usado por el reordenamiento automático)
+app.patch('/api/stops/:id/orden', async (req, res) => {
+  const { orden } = req.body;
+  if (orden == null) {
+    return res.status(400).json({ error: 'El campo orden es requerido' });
+  }
+  try {
+    await pool.query('UPDATE stops SET orden = ? WHERE id = ?', [orden, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    handleError(res, err, 'Error al actualizar orden de parada');
+  }
+});
+
 // ============================================
 // ENDPOINTS ESPECIALES PARA PADRES
 // ============================================
