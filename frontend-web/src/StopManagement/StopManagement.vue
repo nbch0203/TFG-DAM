@@ -224,9 +224,10 @@ async function guardarParada() {
       body: JSON.stringify(payload)
     })
     if (res.ok) {
-  showForm.value = false
+      showForm.value = false
       // Reorder all stops in the affected route before refreshing the list
-      await reordenarRuta(editado.value.route_id)      await cargarParadas()
+      await reordenarRuta(editado.value.route_id)
+      await cargarParadas()
     } else {
       const data = await res.json()
       error.value = data.error || 'Error al guardar parada.'
