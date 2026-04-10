@@ -16,7 +16,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "axios": "1.13.5",
+    "axios": "1.15.0",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
     "pinia": "^3.0.4",
