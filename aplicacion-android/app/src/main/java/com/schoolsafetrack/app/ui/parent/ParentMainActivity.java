@@ -55,6 +55,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
     private Runnable pollRunnable;
     private boolean pollingActive = false;
+    private boolean hasCenteredOnBus = false;
 
     // Child-follow: child id that is currently selected (null = show all)
     private Long followedBusId = null;
@@ -137,8 +138,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         MapView map = binding.mapView;
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
-        map.getController().setZoom(14.0);
-        map.getController().setCenter(new GeoPoint(40.416775, -3.703790));
+        map.getController().setZoom(12.0);
     }
 
     /** Build the "Seguir hijo" spinner with the latest children list. */
@@ -159,6 +159,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                     Child selected = latestChildren.get(position - 1);
                     followedBusId = selected.getBusId();
                 }
+                hasCenteredOnBus = false;
                 // Re-render map immediately with current data
                 List<Bus> currentBuses = viewModel.getBuses().getValue();
                 if (currentBuses != null) updateMapWithBuses(currentBuses);
@@ -306,14 +307,10 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         }
 
         // If a child is followed, center on that bus on first load (don't re-center on every poll)
-        if (followedBusId != null && firstMarker != null
-                && map.getZoomLevelDouble() < 14.0) {
+        if (firstMarker != null && !hasCenteredOnBus) {
             map.getController().animateTo(firstMarker.getPosition());
             map.getController().setZoom(15.0);
-        } else if (followedBusId == null && firstMarker != null
-                && map.getZoomLevelDouble() < 14.0) {
-            map.getController().animateTo(firstMarker.getPosition());
-            map.getController().setZoom(15.0);
+            hasCenteredOnBus = true;
         }
 
         map.invalidate();

@@ -23,31 +23,68 @@ Plataforma integral para el seguimiento en tiempo real del transporte escolar, o
 | Capa | Tecnología |
 |------|-----------|
 | 📱 App móvil | Java (Android) |
-| 🖥 Panel web | Vue.js |
-| 🔌 Backend | Node.js + Express |
-| 💾 Base de datos | MySQL |
-| 🔄 Tiempo real | WebSockets (Socket.io) |
-| 🗺 Mapas | OpenStreetMap (Leaflet / osmdroid) |
-| 📢 Notificaciones | Firebase Cloud Messaging (FCM) |
-| 🔐 Auth | JWT |
+# SchoolSafeTrack
 
----
+Sistema de transporte escolar para seguimiento en tiempo real, gestión de rutas y control por roles.
 
-## 🚀 Estado del Proyecto
+## Resumen General
 
-> En fase de planificación. Consulta [PLAN.md](./PLAN.md) para ver las fases de desarrollo y el progreso actual.
+SchoolSafeTrack organiza el transporte escolar en torno a cuatro perfiles:
+- Administración: gestiona colegios, autobuses, rutas, paradas, alumnos y usuarios desde el panel web.
+- Conductores: registran su ruta y envían ubicación GPS desde la app Android.
+- Padres: consultan el autobús asociado a sus hijos y lo siguen en tiempo real.
+- Profesores: acceden a funcionalidades de consulta y apoyo según el flujo definido por el proyecto.
 
----
+## Cómo Empezar
 
-## 📁 Estructura del Repositorio
+1. Levanta la solución con Docker:
 
+```bash
+docker compose up -d --build
 ```
+
+2. Abre la web en:
+
+```text
+http://localhost:5173
+```
+
+3. Consulta la documentación detallada en:
+- [docs/indice-documentacion.md](docs/indice-documentacion.md)
+- [docs/resumen-general.md](docs/resumen-general.md)
+- [docs/flujo-sistema.md](docs/flujo-sistema.md)
+- [docs/guia-pruebas.md](docs/guia-pruebas.md)
+- [docs/panel-administrativo.md](docs/panel-administrativo.md)
+
+## Estructura del Proyecto
+
+```text
 TFG-DAM/
-├── backend/      # API REST + WebSockets (Node.js)
-├── web/          # Panel de administración (Vue.js)
-├── android/      # Apps móviles padre y conductor (Java)
-├── docs/         # Diagramas, wireframes, ER
-├── docker-compose.yml
-├── PLAN.md
-└── README.md
+├── aplicacion-android/     App Android para conductor y seguimiento
+├── backend/                API Express, lógica de negocio y SQL
+├── frontend-web/           Panel web de administración y padres
+├── docs/                   Documentación por secciones del proyecto
+├── Simulacion ubicacion/    Scripts de simulación GPS
+├── docker-compose.yml      Orquestación de servicios
+└── README.md               Índice general del proyecto
 ```
+
+## Documentación Principal
+
+- [docs/indice-documentacion.md](docs/indice-documentacion.md): índice de la documentación interna.
+- [docs/resumen-general.md](docs/resumen-general.md): visión general del sistema y módulos.
+- [docs/flujo-sistema.md](docs/flujo-sistema.md): flujo entre login, roles, backend y mapas.
+- [docs/guia-pruebas.md](docs/guia-pruebas.md): credenciales, pruebas y verificación.
+- [docs/panel-administrativo.md](docs/panel-administrativo.md): detalle técnico de la gestión administrativa.
+
+## Usuarios de Prueba
+
+El proyecto incluye usuarios de ejemplo para validar los distintos roles. Revisa [docs/guia-pruebas.md](docs/guia-pruebas.md) para ver las credenciales actualizadas y el alcance de cada perfil.
+
+## Tecnologías
+
+- Backend: Node.js, Express, MySQL2
+- Frontend: Vue 3, Vite
+- Android: Kotlin / Java según módulo del proyecto
+- Mapa: Leaflet y OpenStreetMap
+- Contenedores: Docker y Docker Compose

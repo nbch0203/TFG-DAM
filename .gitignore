@@ -31,4 +31,8 @@ aplicacion-android/*.apk
 .idea/
 *.iml
 
+# Archivos de configuración sensibles
 .env
+
+#Plan de desarrollo
+PLAN.md

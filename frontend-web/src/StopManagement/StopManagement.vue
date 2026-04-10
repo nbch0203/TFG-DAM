@@ -58,6 +58,16 @@
           <input v-model="editado.latitud" required type="number" step="any" />
           <label>Longitud:</label>
           <input v-model="editado.longitud" required type="number" step="any" />
+          <label>Asignar a estudiantes:</label>
+          <select v-model="estudiantesSeleccionados" multiple class="estudiantes-select">
+            <option v-if="students.length === 0" disabled value="">
+              No hay estudiantes disponibles
+            </option>
+            <option v-for="student in students" :key="student.id" :value="student.id">
+              {{ student.nombre }} {{ student.apellidos }}
+            </option>
+          </select>
+          <small class="ayuda-multiselect">Mantén pulsado Ctrl para seleccionar varios alumnos.</small>
           <button type="submit">Guardar</button>
           <button type="button" @click="cerrarForm">Cancelar</button>
         </form>
@@ -73,8 +83,10 @@ import { getApiUrl } from '../utils/api.js'
 const stops = ref([])
 const schools = ref([])
 const routes = ref([])
+const students = ref([])
 const showForm = ref(false)
 const editado = ref({})
+const estudiantesSeleccionados = ref([])
 const error = ref('')
 const filtroSchool = ref("")
 const filtroNombre = ref("")
@@ -111,8 +123,27 @@ async function cargarRutas() {
     routes.value = []
   }
 }
-function abrirEditar(stop) {
+async function cargarEstudiantes() {
+  try {
+    const apiUrl = getApiUrl()
+    const res = await fetch(`${apiUrl}/students`)
+    students.value = res.ok ? await res.json() : []
+  } catch {
+    students.value = []
+  }
+}
+async function abrirEditar(stop) {
   editado.value = { ...stop }
+  estudiantesSeleccionados.value = []
+  // Cargar estudiantes asignados a esta parada
+  try {
+    const apiUrl = getApiUrl()
+    const res = await fetch(`${apiUrl}/stops/${stop.id}/students`)
+    if (res.ok) {
+      const asignados = await res.json()
+      estudiantesSeleccionados.value = asignados.map(s => s.student_id)
+    }
+  } catch {}
   showForm.value = true
   error.value = ''
 }
@@ -125,6 +156,7 @@ function abrirCrear() {
     longitud: '',
     orden: 1
   }
+  estudiantesSeleccionados.value = []
   showForm.value = true
   error.value = ''
 }
@@ -224,6 +256,18 @@ async function guardarParada() {
       body: JSON.stringify(payload)
     })
     if (res.ok) {
+      const stopData = await res.json()
+      const stopId = editado.value.id || stopData.id
+      
+      // Guardar asignaciones de estudiantes a la parada
+      if (estudiantesSeleccionados.value.length > 0) {
+        await fetch(`${apiUrl}/stops/${stopId}/assign-students`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_ids: estudiantesSeleccionados.value })
+        })
+      }
+      
       showForm.value = false
       // Reorder all stops in the affected route before refreshing the list
       await reordenarRuta(editado.value.route_id)
@@ -242,5 +286,5 @@ async function eliminarParada(id) {
     if (res.ok) await cargarParadas()
   } catch {}
 }
-onMounted(() => { cargarParadas(); cargarColegios(); cargarRutas(); })
+onMounted(() => { cargarParadas(); cargarColegios(); cargarRutas(); cargarEstudiantes(); })
 </script>

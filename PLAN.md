@@ -74,9 +74,9 @@ real_time_location → id, bus_id, latitud, longitud, velocidad, timestamp
 notifications    → id, user_id, mensaje, tipo, leida, created_at
 ```
 
-### Diagrama ER (pendiente de crear en draw.io / dbdiagram.io)
+<!--### Diagrama ER (pendiente de crear en draw.io / dbdiagram.io)
 > Añadir enlace al diagrama aquí una vez creado.
-
+-->
 ---
 
 ## 🗂️ Fases de Desarrollo
@@ -84,10 +84,10 @@ notifications    → id, user_id, mensaje, tipo, leida, created_at
 ### ✅ Fase 0 – Definición y Diseño (semana 1-2)
 - [x] Definir el proyecto y sus roles
 - [x] Elegir el stack tecnológico
-- [ ] Crear wireframes de la app móvil (Figma)
-- [ ] Crear wireframes del panel web (Figma)
-- [ ] Diseñar el diagrama ER de la base de datos (dbdiagram.io)
-- [ ] Definir la estructura de repositorios/carpetas
+- [x] Crear wireframes de la app móvil (Figma)
+- [x] Crear wireframes del panel web (Figma)
+- [x] Diseñar el diagrama ER de la base de datos (dbdiagram.io)
+- [x] Definir la estructura de repositorios/carpetas
 
 ### Fase 1 – Configuración del Entorno (semana 2-3)
 - [ ] Crear la estructura de carpetas del monorepo (`/backend`, `/web`, `/android`)

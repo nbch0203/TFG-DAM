@@ -193,6 +193,54 @@ const ensureOperationalTables = async () => {
     await pool.query('UPDATE students SET school_id = ? WHERE school_id IS NULL', [defaultSchoolId]);
   }
 
+  // Relación N:M alumno-parada para permitir múltiples paradas por alumno
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS student_stops (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      student_id BIGINT NOT NULL,
+      stop_id BIGINT NOT NULL,
+      es_principal TINYINT(1) DEFAULT 0,
+      created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_student_stop (student_id, stop_id),
+      KEY idx_student_stops_student (student_id),
+      KEY idx_student_stops_stop (stop_id),
+      KEY idx_student_stops_principal (student_id, es_principal),
+      CONSTRAINT student_stops_fk_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+      CONSTRAINT student_stops_fk_stop FOREIGN KEY (stop_id) REFERENCES stops(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  // Backfill desde el modelo legacy (students.stop_id) para no romper instalaciones existentes
+  await pool.query(`
+    INSERT INTO student_stops (student_id, stop_id, es_principal)
+    SELECT s.id, s.stop_id, 1
+    FROM students s
+    LEFT JOIN student_stops ss
+      ON ss.student_id = s.id
+     AND ss.stop_id = s.stop_id
+    WHERE s.stop_id IS NOT NULL
+      AND ss.id IS NULL
+  `);
+
+  // Garantiza que al menos una parada quede como principal por alumno
+  await pool.query(`
+    UPDATE student_stops ss
+    INNER JOIN (
+      SELECT student_id, MIN(id) AS first_link_id
+      FROM student_stops
+      GROUP BY student_id
+    ) first_links ON first_links.student_id = ss.student_id
+    LEFT JOIN (
+      SELECT DISTINCT student_id
+      FROM student_stops
+      WHERE es_principal = 1
+    ) principal ON principal.student_id = ss.student_id
+    SET ss.es_principal = 1
+    WHERE principal.student_id IS NULL
+      AND ss.id = first_links.first_link_id
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS driver_stop_checkins (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -314,6 +362,26 @@ const remove = async (res, query, params) => {
   } catch (err) {
     handleError(res, err, 'Error al eliminar registro');
   }
+};
+
+const normalizeStopIds = (stopIdsInput, fallbackStopId) => {
+  const ids = [];
+
+  if (Array.isArray(stopIdsInput)) {
+    stopIdsInput.forEach((id) => {
+      const numeric = Number(id);
+      if (Number.isInteger(numeric) && numeric > 0 && !ids.includes(numeric)) {
+        ids.push(numeric);
+      }
+    });
+  }
+
+  const fallback = Number(fallbackStopId);
+  if (ids.length === 0 && Number.isInteger(fallback) && fallback > 0) {
+    ids.push(fallback);
+  }
+
+  return ids;
 };
 
 // Normaliza valores porcentuales provenientes de docker
@@ -677,6 +745,19 @@ app.get('/api/users/:id', async (req, res) => {
   }
 });
 
+// Obtener listado de padres (usuarios con rol 'PARENT')
+app.get('/api/parents', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, email, nombre, apellidos FROM users WHERE role = ?',
+      ['PARENT']
+    );
+    res.json(rows);
+  } catch (err) {
+    handleError(res, err, 'Error al obtener padres');
+  }
+});
+
 // Actualizar perfil propio (no se pueden cambiar id ni role)
 app.patch('/api/users/:id/profile', async (req, res) => {
   try {
@@ -843,7 +924,22 @@ app.patch('/api/buses/:id/location', (req, res) => {
 // Listar todos
 app.get('/api/students', (req, res) => {
   findAll(res, `
-    SELECT s.*, u.email AS parent_email, sc.nombre AS school_nombre
+    SELECT
+      s.*,
+      COALESCE(
+        (
+          SELECT ss.stop_id
+          FROM student_stops ss
+          WHERE ss.student_id = s.id
+          ORDER BY ss.es_principal DESC, ss.id ASC
+          LIMIT 1
+        ),
+        s.stop_id
+      ) AS stop_id_effective,
+      u.email AS parent_email,
+      u.nombre AS parent_nombre,
+      u.apellidos AS parent_apellidos,
+      sc.nombre AS school_nombre
     FROM students s
     LEFT JOIN users u ON s.parent_id = u.id
     LEFT JOIN schools sc ON s.school_id = sc.id
@@ -851,31 +947,124 @@ app.get('/api/students', (req, res) => {
 });
 
 // Crear nuevo
-app.post('/api/students', (req, res) => {
-  const { nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, school_id } = req.body;
+app.post('/api/students', async (req, res) => {
+  const { nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, stop_ids, school_id } = req.body;
   
   if (!nombre || !apellidos) {
     return res.status(400).json({ error: 'Nombre y apellidos requeridos' });
   }
-  
-  create(res,
-    'INSERT INTO students (nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, school_id, activo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
-    [nombre, apellidos, fecha_nacimiento || null, curso || null, parent_id || null, stop_id || null, school_id || null]
-  );
+
+  const stopIds = normalizeStopIds(stop_ids, stop_id);
+  const primaryStopId = stopIds[0] || null;
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    const [result] = await conn.query(
+      'INSERT INTO students (nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, school_id, activo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+      [nombre, apellidos, fecha_nacimiento || null, curso || null, parent_id || null, primaryStopId, school_id || null]
+    );
+
+    if (stopIds.length > 0) {
+      const values = stopIds.map((id, index) => [result.insertId, id, index === 0 ? 1 : 0]);
+      await conn.query(
+        'INSERT INTO student_stops (student_id, stop_id, es_principal) VALUES ?',
+        [values]
+      );
+    }
+
+    await conn.commit();
+    res.status(201).json({ success: true, id: result.insertId });
+  } catch (err) {
+    if (conn) await conn.rollback();
+    handleError(res, err, 'Error al crear registro');
+  } finally {
+    if (conn) conn.release();
+  }
 });
 
 // Actualizar
-app.put('/api/students/:id', (req, res) => {
-  const { nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, school_id } = req.body;
+app.put('/api/students/:id', async (req, res) => {
+  const { nombre, apellidos, fecha_nacimiento, curso, parent_id, stop_id, stop_ids, school_id } = req.body;
   
   if (!nombre || !apellidos) {
     return res.status(400).json({ error: 'Nombre y apellidos requeridos' });
   }
-  
-  update(res,
-    'UPDATE students SET nombre=?, apellidos=?, fecha_nacimiento=?, curso=?, parent_id=?, stop_id=?, school_id=? WHERE id=?',
-    [nombre, apellidos, fecha_nacimiento || null, curso || null, parent_id || null, stop_id || null, school_id || null, req.params.id]
-  );
+
+  const studentId = Number(req.params.id);
+  if (!Number.isInteger(studentId) || studentId <= 0) {
+    return res.status(400).json({ error: 'ID de alumno inválido' });
+  }
+
+  const hasStopPayload = Array.isArray(stop_ids) || stop_id !== undefined;
+  let stopIds = [];
+  let primaryStopId = null;
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    if (hasStopPayload) {
+      stopIds = normalizeStopIds(stop_ids, stop_id);
+      primaryStopId = stopIds[0] || null;
+    } else {
+      const [[currentStudent]] = await conn.query(
+        'SELECT stop_id FROM students WHERE id = ? LIMIT 1',
+        [studentId]
+      );
+
+      if (!currentStudent) {
+        await conn.rollback();
+        return res.status(404).json({ error: 'Registro no encontrado' });
+      }
+
+      const [currentLinks] = await conn.query(
+        'SELECT stop_id FROM student_stops WHERE student_id = ? ORDER BY es_principal DESC, id ASC',
+        [studentId]
+      );
+
+      if (currentLinks.length > 0) {
+        stopIds = currentLinks.map((row) => Number(row.stop_id)).filter((id) => Number.isInteger(id) && id > 0);
+      } else if (currentStudent.stop_id) {
+        stopIds = [Number(currentStudent.stop_id)];
+      }
+
+      primaryStopId = stopIds[0] || null;
+    }
+
+    const [result] = await conn.query(
+      'UPDATE students SET nombre=?, apellidos=?, fecha_nacimiento=?, curso=?, parent_id=?, stop_id=?, school_id=? WHERE id=?',
+      [nombre, apellidos, fecha_nacimiento || null, curso || null, parent_id || null, primaryStopId, school_id || null, studentId]
+    );
+
+    if (result.affectedRows === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: 'Registro no encontrado' });
+    }
+
+    if (hasStopPayload) {
+      await conn.query('DELETE FROM student_stops WHERE student_id = ?', [studentId]);
+
+      if (stopIds.length > 0) {
+        const values = stopIds.map((id, index) => [studentId, id, index === 0 ? 1 : 0]);
+        await conn.query(
+          'INSERT INTO student_stops (student_id, stop_id, es_principal) VALUES ?',
+          [values]
+        );
+      }
+    }
+
+    await conn.commit();
+    res.json({ success: true });
+  } catch (err) {
+    if (conn) await conn.rollback();
+    handleError(res, err, 'Error al actualizar registro');
+  } finally {
+    if (conn) conn.release();
+  }
 });
 
 // Eliminar
@@ -888,7 +1077,30 @@ app.get('/api/students/:id', (req, res) => {
   findOne(res, `
     SELECT s.*, st.nombre AS stop_nombre, st.direccion AS stop_direccion,
            st.latitud, st.longitud, sc.nombre AS school_nombre,
-           u.email AS parent_email
+           u.email AS parent_email,
+           (
+             SELECT COUNT(*)
+             FROM (
+               SELECT ss.stop_id
+               FROM student_stops ss
+               WHERE ss.student_id = s.id
+               UNION
+               SELECT s.stop_id
+               WHERE s.stop_id IS NOT NULL
+             ) links
+           ) AS stops_count,
+           (
+             SELECT GROUP_CONCAT(st2.nombre ORDER BY st2.orden ASC, st2.id ASC SEPARATOR ' | ')
+             FROM (
+               SELECT ss.stop_id
+               FROM student_stops ss
+               WHERE ss.student_id = s.id
+               UNION
+               SELECT s.stop_id
+               WHERE s.stop_id IS NOT NULL
+             ) links
+             INNER JOIN stops st2 ON st2.id = links.stop_id
+           ) AS stop_nombres
     FROM students s
     LEFT JOIN stops st ON s.stop_id = st.id
     LEFT JOIN schools sc ON s.school_id = sc.id
@@ -904,7 +1116,7 @@ app.get('/api/parent/:parentId/children/:childId/incidents', async (req, res) =>
 
     // Verificar que el alumno pertenece a este padre
     const [students] = await pool.query(
-      'SELECT stop_id FROM students WHERE id = ? AND parent_id = ? AND activo = 1',
+      'SELECT id, stop_id FROM students WHERE id = ? AND parent_id = ? AND activo = 1',
       [childId, parentId]
     );
 
@@ -912,14 +1124,18 @@ app.get('/api/parent/:parentId/children/:childId/incidents', async (req, res) =>
       return res.status(404).json({ error: 'Alumno no encontrado' });
     }
 
-    const stopId = students[0].stop_id;
-    if (!stopId) {
-      return res.json([]);
-    }
-
     // Obtener incidencias de los trayectos que sirven la parada del alumno
     const [rows] = await pool.query(
-      `SELECT i.id, i.tipo, i.descripcion, i.latitud, i.longitud,
+      `WITH child_stop_links AS (
+         SELECT ss.stop_id
+         FROM student_stops ss
+         WHERE ss.student_id = ?
+         UNION
+         SELECT s.stop_id
+         FROM students s
+         WHERE s.id = ? AND s.stop_id IS NOT NULL
+       )
+       SELECT i.id, i.tipo, i.descripcion, i.latitud, i.longitud,
               i.resuelto, i.created_at, i.updated_at, i.fecha_resolucion,
               r.nombre AS route_nombre, b.matricula,
               ra.fecha AS fecha_trayecto
@@ -928,11 +1144,13 @@ app.get('/api/parent/:parentId/children/:childId/incidents', async (req, res) =>
        INNER JOIN routes r ON ra.route_id = r.id
        INNER JOIN buses b ON ra.bus_id = b.id
        WHERE ra.route_id IN (
-         SELECT DISTINCT route_id FROM stops WHERE id = ?
+         SELECT DISTINCT st.route_id
+         FROM stops st
+         INNER JOIN child_stop_links csl ON csl.stop_id = st.id
        )
        ORDER BY i.created_at DESC
        LIMIT 50`,
-      [stopId]
+      [childId, childId]
     );
 
     res.json(rows);
@@ -1321,6 +1539,58 @@ app.patch('/api/stops/:id/orden', async (req, res) => {
   }
 });
 
+// Obtener estudiantes asignados a una parada
+app.get('/api/stops/:id/students', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      `SELECT s.*, ss.id as assignment_id, ss.es_principal
+       FROM student_stops ss
+       INNER JOIN students s ON s.id = ss.student_id
+       WHERE ss.stop_id = ?`,
+      [id]
+    );
+    res.json(rows);
+  } catch (err) {
+    handleError(res, err, 'Error al obtener estudiantes de la parada');
+  }
+});
+
+// Asignar estudiantes a una parada
+app.post('/api/stops/:id/assign-students', async (req, res) => {
+  let conn;
+  try {
+    const { id } = req.params;
+    const { student_ids } = req.body;
+    
+    if (!Array.isArray(student_ids)) {
+      return res.status(400).json({ error: 'student_ids debe ser un array' });
+    }
+    
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+    
+    // Eliminar asignaciones previas
+    await conn.query('DELETE FROM student_stops WHERE stop_id = ?', [id]);
+    
+    // Insertar nuevas asignaciones
+    for (const studentId of student_ids) {
+      await conn.query(
+        'INSERT INTO student_stops (student_id, stop_id, es_principal) VALUES (?, ?, 0)',
+        [studentId, id]
+      );
+    }
+    
+    await conn.commit();
+    res.json({ success: true, message: 'Estudiantes asignados correctamente' });
+  } catch (err) {
+    if (conn) await conn.rollback();
+    handleError(res, err, 'Error al asignar estudiantes a la parada');
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
 // ============================================
 // ENDPOINTS ESPECIALES PARA PADRES
 // ============================================
@@ -1329,40 +1599,43 @@ app.patch('/api/stops/:id/orden', async (req, res) => {
 app.get('/api/parent/:parentId/buses', async (req, res) => {
   try {
     const { parentId } = req.params;
-    
-    // Obtener paradas de los hijos
-    const [students] = await pool.query(
-      'SELECT DISTINCT stop_id FROM students WHERE parent_id = ? AND stop_id IS NOT NULL',
-      [parentId]
-    );
-    
-    if (students.length === 0) {
-      return res.json([]);
-    }
-    
-    // Obtener rutas de esas paradas
-    const stopIds = students.map(s => s.stop_id);
-    const placeholders = stopIds.map(() => '?').join(',');
-    
-    const [routes] = await pool.query(
-      `SELECT DISTINCT r.id FROM routes r 
-       INNER JOIN stops s ON r.id = s.route_id 
-       WHERE s.id IN (${placeholders})`,
-      stopIds
-    );
-    
-    if (routes.length === 0) {
-      return res.json([]);
-    }
-    
-    // Obtener buses activos
+
     const [buses] = await pool.query(
-      `SELECT b.*, CONCAT(u.nombre, ' ', u.apellidos) AS conductor_nombre, u.email AS conductor_email 
-       FROM buses b 
-       LEFT JOIN users u ON b.driver_id = u.id 
-       WHERE b.estado = 'ACTIVO'`
+      `WITH parent_stop_links AS (
+         SELECT DISTINCT s.id AS student_id, ss.stop_id
+         FROM students s
+         INNER JOIN student_stops ss ON ss.student_id = s.id
+         WHERE s.parent_id = ? AND s.activo = 1
+         UNION
+         SELECT DISTINCT s.id AS student_id, s.stop_id
+         FROM students s
+         WHERE s.parent_id = ? AND s.activo = 1 AND s.stop_id IS NOT NULL
+       ),
+       parent_routes AS (
+         SELECT DISTINCT st.route_id
+         FROM parent_stop_links psl
+         INNER JOIN stops st ON st.id = psl.stop_id
+         WHERE st.route_id IS NOT NULL
+       )
+       SELECT DISTINCT
+         b.*,
+         CONCAT(u.nombre, ' ', u.apellidos) AS conductor_nombre,
+         u.email AS conductor_email,
+         r.nombre AS route_nombre,
+         ra.estado AS route_assignment_estado
+       FROM route_assignments ra
+       INNER JOIN buses b ON b.id = ra.bus_id
+       INNER JOIN routes r ON r.id = ra.route_id
+       INNER JOIN parent_routes pr ON pr.route_id = ra.route_id
+       LEFT JOIN users u ON b.driver_id = u.id
+       WHERE ra.fecha = CURDATE()
+         AND ra.estado IN ('EN_CURSO', 'PROGRAMADA')
+       ORDER BY
+         FIELD(ra.estado, 'EN_CURSO', 'PROGRAMADA'),
+         b.id`,
+      [parentId, parentId]
     );
-    
+
     res.json(buses);
   } catch (err) {
     handleError(res, err, 'Error al obtener buses del padre');
@@ -1372,18 +1645,81 @@ app.get('/api/parent/:parentId/buses', async (req, res) => {
 // Obtener hijos de un padre (incluye bus_id del día para seguimiento en tiempo real)
 app.get('/api/parent/:parentId/children', (req, res) => {
   findAll(res, `
-    SELECT s.*,
-           st.nombre AS stop_nombre, st.direccion AS stop_direccion,
-           st.latitud, st.longitud,
-           ra.bus_id
+    WITH child_stop_links AS (
+      SELECT s.id AS student_id, ss.stop_id, ss.es_principal
+      FROM students s
+      INNER JOIN student_stops ss ON ss.student_id = s.id
+      WHERE s.parent_id = ? AND s.activo = 1
+      UNION
+      SELECT s.id AS student_id, s.stop_id, 1 AS es_principal
+      FROM students s
+      WHERE s.parent_id = ? AND s.activo = 1 AND s.stop_id IS NOT NULL
+    ),
+    dedup_links AS (
+      SELECT student_id, stop_id, MAX(es_principal) AS es_principal
+      FROM child_stop_links
+      GROUP BY student_id, stop_id
+    ),
+    ranked_stops AS (
+      SELECT
+        d.student_id,
+        st.id AS stop_id,
+        st.nombre,
+        st.direccion,
+        st.latitud,
+        st.longitud,
+        st.route_id,
+        ROW_NUMBER() OVER (
+          PARTITION BY d.student_id
+          ORDER BY d.es_principal DESC, st.orden ASC, st.id ASC
+        ) AS rn
+      FROM dedup_links d
+      INNER JOIN stops st ON st.id = d.stop_id
+    ),
+    principal_stop AS (
+      SELECT student_id, stop_id, nombre, direccion, latitud, longitud, route_id
+      FROM ranked_stops
+      WHERE rn = 1
+    )
+    SELECT
+      s.*,
+      ps.nombre AS stop_nombre,
+      ps.direccion AS stop_direccion,
+      ps.latitud,
+      ps.longitud,
+      (
+        SELECT COUNT(*)
+        FROM dedup_links dl_count
+        WHERE dl_count.student_id = s.id
+      ) AS stops_count,
+      (
+        SELECT GROUP_CONCAT(
+                 DISTINCT st_all.nombre
+                 ORDER BY dl_all.es_principal DESC, st_all.orden ASC, st_all.id ASC
+                 SEPARATOR ' | '
+               )
+        FROM dedup_links dl_all
+        INNER JOIN stops st_all ON st_all.id = dl_all.stop_id
+        WHERE dl_all.student_id = s.id
+      ) AS stop_nombres,
+      (
+        SELECT ra.bus_id
+        FROM route_assignments ra
+        INNER JOIN stops st2 ON st2.route_id = ra.route_id
+        INNER JOIN dedup_links dl_bus
+                ON dl_bus.stop_id = st2.id
+               AND dl_bus.student_id = s.id
+        WHERE ra.fecha = CURDATE()
+          AND ra.estado IN ('EN_CURSO', 'PROGRAMADA')
+        ORDER BY FIELD(ra.estado, 'EN_CURSO', 'PROGRAMADA'), ra.id DESC
+        LIMIT 1
+      ) AS bus_id
     FROM students s
-    LEFT JOIN stops st ON s.stop_id = st.id
-    LEFT JOIN route_assignments ra
-           ON ra.route_id = st.route_id
-          AND ra.fecha = CURDATE()
-          AND ra.estado IN ('PROGRAMADA', 'EN_CURSO')
-    WHERE s.parent_id = ? AND s.activo = 1
-  `, [req.params.parentId]);
+    LEFT JOIN principal_stop ps ON ps.student_id = s.id
+    WHERE s.parent_id = ?
+      AND s.activo = 1
+    ORDER BY s.nombre ASC, s.apellidos ASC
+  `, [req.params.parentId, req.params.parentId, req.params.parentId]);
 });
 
 // ============================================
