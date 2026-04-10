@@ -9,6 +9,8 @@
     <string name="logout">Cerrar sesión</string>
     <string name="welcome_back">¡Bienvenido de nuevo!</string>
     <string name="login_subtitle">Accede a tu cuenta para continuar</string>
+    <string name="server_url_hint">URL del servidor (ej: http://192.168.1.X:3000/api/)</string>
+    <string name="server_url_error">Introduce una URL válida (debe empezar por http)</string>
 
     <!-- Parent panel -->
     <string name="parent_panel">Mis hijos</string>
