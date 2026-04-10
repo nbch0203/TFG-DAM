@@ -7,6 +7,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityLoginBinding;
 import com.schoolsafetrack.app.ui.driver.DriverMainActivity;
@@ -27,13 +28,28 @@ public class LoginActivity extends AppCompatActivity {
         session = new SessionManager(this);
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
+        // Pre-fill server URL with the previously saved value (or the default)
+        binding.etServerUrl.setText(session.getServerUrl());
+
         observeViewModel();
         binding.btnLogin.setOnClickListener(v -> attemptLogin());
     }
 
     private void attemptLogin() {
+        String serverUrl = binding.etServerUrl.getText().toString().trim();
         String email = binding.etEmail.getText().toString().trim();
         String password = binding.etPassword.getText().toString();
+
+        // Validate server URL
+        if (serverUrl.isEmpty() || !serverUrl.startsWith("http")) {
+            binding.tilServerUrl.setError(getString(R.string.server_url_error));
+            return;
+        }
+        binding.tilServerUrl.setError(null);
+        // Ensure trailing slash
+        if (!serverUrl.endsWith("/")) {
+            serverUrl = serverUrl + "/";
+        }
 
         if (email.isEmpty()) {
             binding.tilEmail.setError("Introduce tu correo");
@@ -45,6 +61,10 @@ public class LoginActivity extends AppCompatActivity {
         }
         binding.tilEmail.setError(null);
         binding.tilPassword.setError(null);
+
+        // Persist & apply the server URL before the network call
+        session.saveServerUrl(serverUrl);
+        com.schoolsafetrack.app.data.network.RetrofitClient.resetWithBaseUrl(serverUrl);
 
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.btnLogin.setEnabled(false);

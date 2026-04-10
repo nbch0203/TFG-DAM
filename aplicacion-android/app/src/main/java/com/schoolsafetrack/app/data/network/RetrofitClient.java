@@ -7,14 +7,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    // URL base del backend. Cambiar por la IP real en producción.
-    // En emulador Android, 10.0.2.2 apunta al localhost del ordenador host.
-    private static final String BASE_URL = "http://10.0.2.2:3000/api/";
+    // URL por defecto: 10.0.2.2 sólo funciona en el emulador Android.
+    // En dispositivo físico hay que usar la IP real del PC en la red local.
+    public static final String DEFAULT_BASE_URL = "http://10.0.2.2:3000/api/";
 
+    private static String currentBaseUrl = DEFAULT_BASE_URL;
     private static RetrofitClient instance;
     private final ApiService apiService;
 
-    private RetrofitClient() {
+    private RetrofitClient(String baseUrl) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
@@ -23,7 +24,7 @@ public class RetrofitClient {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(baseUrl)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -33,7 +34,7 @@ public class RetrofitClient {
 
     public static synchronized RetrofitClient getInstance() {
         if (instance == null) {
-            instance = new RetrofitClient();
+            instance = new RetrofitClient(currentBaseUrl);
         }
         return instance;
     }
@@ -42,8 +43,13 @@ public class RetrofitClient {
         return apiService;
     }
 
-    /** Permite cambiar la URL base en runtime (p.ej. desde ajustes). */
-    public static void resetWithBaseUrl(String baseUrl) {
+    /** Cambia la URL base en runtime (p.ej. al guardar la IP del servidor). */
+    public static synchronized void resetWithBaseUrl(String baseUrl) {
+        currentBaseUrl = baseUrl;
         instance = null;
+    }
+
+    public static String getCurrentBaseUrl() {
+        return currentBaseUrl;
     }
 }

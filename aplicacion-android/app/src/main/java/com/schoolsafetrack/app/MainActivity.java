@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.schoolsafetrack.app.data.network.RetrofitClient;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.ui.driver.DriverMainActivity;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         SessionManager session = new SessionManager(this);
+
+        // Restore the previously saved server URL (important for physical devices)
+        RetrofitClient.resetWithBaseUrl(session.getServerUrl());
+
         Intent intent;
 
         if (session.isLoggedIn()) {
