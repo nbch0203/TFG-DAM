@@ -96,3 +96,39 @@ button:hover {
   color: #dc2626;
   margin-top: 1rem;
 }
+.estudiantes-lista {
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 0.8rem;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+.checkbox-item {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+.checkbox-item:hover {
+  background: #f0f0f0;
+}
+.checkbox-item input[type="checkbox"] {
+  margin-right: 0.6rem;
+  cursor: pointer;
+}
+.estudiantes-select {
+  min-height: 170px;
+  padding: 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #fff;
+}
+.ayuda-multiselect {
+  display: block;
+  margin-top: 0.35rem;
+  color: #6b7280;
+  font-size: 12px;
+}

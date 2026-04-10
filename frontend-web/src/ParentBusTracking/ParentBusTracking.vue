@@ -1,134 +1,81 @@
 <template>
   <div class="tracking-container">
-    <h1>📍 Seguimiento de Autobuses</h1>
+    <h1>📍 Seguimiento de mi hijo</h1>
     
     <div v-if="cargando" class="loading">
       <span class="spinner"></span>
-      <p>Cargando información de autobuses...</p>
+      <p>Cargando información...</p>
     </div>
 
-    <div v-else-if="autobusesDelPadre.length" class="buses-info">
-      <!-- Selector de autobús -->
+    <div v-else-if="hijosDelPadre.length" class="buses-info">
+      <!-- Selector de hijo (único) -->
       <div class="selector-container">
-        <label for="bus-selector">Selecciona un autobús:</label>
-        <select id="bus-selector" v-model="autobusPadreSeleccionado" class="bus-selector">
-          <option v-for="bus in autobusesDelPadre" :key="bus.id" :value="bus.id">
-            {{ bus.matricula }} - {{ bus.marca }} {{ bus.modelo }}
+        <label for="child-selector-main">Elige un hijo para seguir:</label>
+        <select id="child-selector-main" v-model="hijoSeleccionado" class="bus-selector">
+          <option v-for="hijo in hijosDelPadre" :key="hijo.id" :value="hijo.id">
+            {{ hijo.nombre }} {{ hijo.apellidos }}
           </option>
         </select>
       </div>
 
-      <!-- Información del autobús seleccionado -->
+      <!-- Sin autobús asignado -->
+      <div v-if="hijoActual && !hijoActual.bus_id" class="no-location" style="margin-top: 2rem;">
+        <p>⚠️ {{ hijoActual.nombre }} no tiene un autobús activo asignado en este momento.</p>
+      </div>
+
+      <!-- Información del autobús (cuando existe) -->
       <div v-if="autobusPadre" class="bus-card">
         <div class="bus-header">
-          <h2>{{ autobusPadre.matricula }}</h2>
+          <div>
+            <h2 style="margin: 0;">{{ autobusPadre.matricula }}</h2>
+            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 14px;">
+              Autobús de {{ hijoActual?.nombre }}
+            </p>
+          </div>
           <span class="badge" :class="estadoBus">{{ estadoBus }}</span>
         </div>
         
         <div class="bus-details">
           <div class="detail-item">
             <strong>Vehículo:</strong>
-            <span>{{ autobusPadre.marca }} {{ autobusPadre.modelo }} ({{ autobusPadre.anio }})</span>
-          </div>
-          <div class="detail-item">
-            <strong>Capacidad:</strong>
-            <span>{{ autobusPadre.capacidad }} pasajeros</span>
+            <span>{{ autobusPadre.marca }} {{ autobusPadre.modelo }}</span>
           </div>
           <div class="detail-item">
             <strong>Conductor:</strong>
             <span>{{ autobusPadre.conductor_nombre || 'Sin asignar' }}</span>
           </div>
           <div class="detail-item">
-            <strong>Estado:</strong>
-            <span>{{ autobusPadre.estado }}</span>
+            <strong>Parada:</strong>
+            <span>{{ hijoActual?.stop_nombres || hijoActual?.stop_nombre || 'No definida' }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Mapa -->
-      <div class="map-container">
+      <!-- Mapa en tiempo real -->
+      <div class="map-container" v-if="autobusPadre">
         <div class="map-header">
           <h3>Ubicación en tiempo real</h3>
           <p v-if="tiempoActualizacion" class="update-time">
-            Última actualización: {{ tiempoActualizacion }}
+            📡 {{ tiempoActualizacion }}
           </p>
         </div>
 
-        <!-- Selector de hijo dentro del mapa -->
-        <div class="child-selector-row">
-          <label for="child-selector">👦 Seguir hijo:</label>
-          <select id="child-selector" v-model="hijoSeleccionado" class="child-selector">
-            <option :value="null">— Ver autobús seleccionado —</option>
-            <option v-for="hijo in hijosDelPadre" :key="hijo.id" :value="hijo.id">
-              {{ hijo.nombre }} {{ hijo.apellidos }}
-              <template v-if="hijo.stop_nombre"> · {{ hijo.stop_nombre }}</template>
-            </option>
-          </select>
-        </div>
+        <div id="bus-map" class="map"></div>
         
-        <div id="bus-map" class="map" style="height: 400px; width: 100%; border-radius: 8px; margin-top: 1rem;"></div>
-        
-        <div v-if="!autobusPadre.lat || !autobusPadre.lon" class="no-location">
-          <p>⚠️ No hay localización disponible en este momento</p>
+        <div v-if="!tieneUbicacionAutobus" class="no-location" style="margin-top: 1rem;">
+          <p>⚠️ Buscando ubicación GPS...</p>
         </div>
 
-        <div class="location-info">
-          <p><strong>Latitud:</strong> {{ autobusPadre.lat?.toFixed(6) || 'N/A' }}</p>
-          <p><strong>Longitud:</strong> {{ autobusPadre.lon?.toFixed(6) || 'N/A' }}</p>
-        </div>
-      </div>
-
-      <!-- Paradas de tus hijos -->
-      <div class="children-stops">
-        <h3>📍 Paradas de tus hijos</h3>
-        <div v-if="hijosDelPadre.length" class="stops-list">
-          <div v-for="hijo in hijosDelPadre" :key="hijo.id" class="stop-item">
-            <div class="stop-info">
-              <strong>{{ hijo.nombre }} {{ hijo.apellidos }}</strong>
-              <p class="stop-location">{{ hijo.stop_nombre }}</p>
-              <p class="stop-address">{{ hijo.stop_direccion }}</p>
-            </div>
-            <button class="ver-btn" @click="mostrarParadaEnMapa(hijo)">Ver en mapa</button>
-          </div>
-        </div>
-        <div v-else class="no-children">
-          <p>No hay hijos con paradas asignadas</p>
-        </div>
-      </div>
-
-      <!-- Información en tiempo real -->
-      <div class="eta-container">
-        <h3>📊 Estadísticas en tiempo real</h3>
-        <div class="stats-grid">
-          <div class="stat">
-            <strong>Autobuses conectados:</strong>
-            <p>{{ autobusesDelPadre.length }}</p>
-          </div>
-          <div class="stat">
-            <strong>Autobús en movimiento:</strong>
-            <p>{{ autobusPadre.lat && autobusPadre.lon ? 'Sí' : 'No' }}</p>
-          </div>
-          <div class="stat">
-            <strong>Estado del conductor:</strong>
-            <p>{{ autobusPadre.conductor_nombre ? 'Activo' : 'Sin asignar' }}</p>
-          </div>
+        <div v-if="tieneUbicacionAutobus" class="location-info">
+          <p><strong>Lat:</strong> {{ autobusPadre?.lat?.toFixed(6) }}</p>
+          <p><strong>Lon:</strong> {{ autobusPadre?.lon?.toFixed(6) }}</p>
         </div>
       </div>
     </div>
 
     <div v-else class="no-buses">
-      <p>⚠️ No tienes autobuses asignados o no hay información disponible.</p>
-      <p>Por favor, contacta con la escuela para confirmar la asignación de tus hijos.</p>
-    </div>
-
-    <div class="info-section">
-      <h3>ℹ️ Información útil</h3>
-      <ul>
-        <li>✅ La información se actualiza en tiempo real</li>
-        <li>✅ Puedes ver múltiples autobuses si tus hijos usan diferentes</li>
-        <li>✅ En caso de emergencia, contacta directamente al conductor</li>
-        <li>✅ Las coordenadas se muestran con precisión GPS</li>
-      </ul>
+      <p>⚠️ No hay hijos registrados.</p>
+      <p>Por favor, contacta con la escuela para confirmar la asignación.</p>
     </div>
   </div>
 </template>
@@ -139,26 +86,50 @@ import { getApiUrl } from '../utils/api.js'
 
 const autobusesDelPadre = ref([])
 const hijosDelPadre = ref([])
-const autobusPadreSeleccionado = ref(null)
 const hijoSeleccionado = ref(null)
 const cargando = ref(true)
 const tiempoActualizacion = ref('')
 let mapa = null
 let marcador = null
-let marcadoresParadas = []
 let intervalo = null
 let parentId = null
 
-const autobusPadre = computed(() => {
-  if (!autobusPadreSeleccionado.value) return autobusesDelPadre.value[0] || null
-  return autobusesDelPadre.value.find(b => b.id === autobusPadreSeleccionado.value)
+const hijoActual = computed(() => {
+  if (!hijoSeleccionado.value) return hijosDelPadre.value[0] || null
+  return hijosDelPadre.value.find(h => h.id === hijoSeleccionado.value) || null
 })
+
+const autobusPadre = computed(() => {
+  const busId = hijoActual.value?.bus_id
+  if (!busId) return null
+  return autobusesDelPadre.value.find(b => b.id === busId) || null
+})
+
+function tieneCoordenadasValidas(obj) {
+  if (!obj) return false
+  const lat = Number(obj.lat)
+  const lon = Number(obj.lon)
+  return Number.isFinite(lat) && Number.isFinite(lon)
+}
+
+const tieneUbicacionAutobus = computed(() => tieneCoordenadasValidas(autobusPadre.value))
 
 const estadoBus = computed(() => {
   if (!autobusPadre.value) return 'desconocido'
-  if (autobusPadre.value.lat && autobusPadre.value.lon) return 'en-movimiento'
+  if (tieneUbicacionAutobus.value) return 'en-movimiento'
   return 'detenido'
 })
+
+function sincronizarHijoSeleccionado() {
+  if (!hijosDelPadre.value.length) {
+    hijoSeleccionado.value = null
+    return
+  }
+  const existe = hijosDelPadre.value.some(h => h.id === hijoSeleccionado.value)
+  if (!existe) {
+    hijoSeleccionado.value = hijosDelPadre.value[0].id
+  }
+}
 
 async function cargarDatosDelPadre() {
   cargando.value = true
@@ -176,14 +147,12 @@ async function cargarDatosDelPadre() {
     const busesRes = await fetch(`${apiUrl}/parent/${parentId}/buses`)
     if (busesRes.ok) {
       autobusesDelPadre.value = await busesRes.json()
-      if (autobusesDelPadre.value.length > 0) {
-        autobusPadreSeleccionado.value = autobusesDelPadre.value[0].id
-      }
     }
     
     const childrenRes = await fetch(`${apiUrl}/parent/${parentId}/children`)
     if (childrenRes.ok) {
       hijosDelPadre.value = await childrenRes.json()
+      sincronizarHijoSeleccionado()
     }
     
     actualizarTiempo()
@@ -216,40 +185,16 @@ function mostrarMapa(lat, lon) {
       }).addTo(mapa)
       marcador.bindPopup(`Autobús ${autobusPadre.value.matricula}`)
     } else {
-      // Only move the marker — do NOT re-center so the user can freely pan/zoom
+      if (!marcador) {
+        marcador = window.L.marker([lat, lon]).addTo(mapa)
+      }
+      // Solo move the marker — do NOT re-center so the user can freely pan/zoom
       marcador.setLatLng([lat, lon])
+      if (autobusPadre.value) {
+        marcador.bindPopup(`Autobús ${autobusPadre.value.matricula}`)
+      }
     }
   }, 200)
-}
-
-function mostrarParadaEnMapa(hijo) {
-  if (hijo.latitud && hijo.longitud) {
-    setTimeout(() => {
-      if (!mapa) {
-        mapa = window.L.map('bus-map').setView([hijo.latitud, hijo.longitud], 16)
-        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap'
-        }).addTo(mapa)
-      } else {
-        mapa.setView([hijo.latitud, hijo.longitud], 16)
-      }
-      marcadoresParadas.forEach(m => mapa.removeLayer(m))
-      marcadoresParadas = []
-      const markerParada = window.L.marker([hijo.latitud, hijo.longitud], {
-        icon: window.L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        })
-      }).addTo(mapa)
-      markerParada.bindPopup(`${hijo.nombre} - ${hijo.stop_nombre}`)
-      marcadoresParadas.push(markerParada)
-    }, 200)
-  }
 }
 
 function actualizarTiempo() {
@@ -271,6 +216,7 @@ async function recargarDatos() {
     }
     if (childrenRes.ok) {
       hijosDelPadre.value = await childrenRes.json()
+      sincronizarHijoSeleccionado()
     }
     
     actualizarTiempo()
@@ -287,8 +233,18 @@ function iniciarActualizacionPeriódica() {
 }
 
 onMounted(() => {
+  // Cargar Leaflet si no está presente
+  if (!window.L) {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://unpkg.com/leaflet/dist/leaflet.css'
+    document.head.appendChild(link)
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet/dist/leaflet.js'
+    document.body.appendChild(script)
+  }
+  
   cargarDatosDelPadre()
-  // iniciarActualizacionPeriódica() is already called inside cargarDatosDelPadre
 })
 
 onBeforeUnmount(() => {
@@ -297,71 +253,80 @@ onBeforeUnmount(() => {
 })
 
 watch(() => autobusPadre.value, (newBus) => {
-  if (newBus) {
-    const lat = newBus.lat || 40.4168
-    const lon = newBus.lon || -3.7038
+  if (newBus && tieneCoordenadasValidas(newBus)) {
+    const lat = Number(newBus.lat)
+    const lon = Number(newBus.lon)
     mostrarMapa(lat, lon)
+  } else if (marcador && mapa) {
+    mapa.removeLayer(marcador)
+    marcador = null
   }
 }, { immediate: true })
 
-// When the parent picks a child, auto-switch to that child's bus
-watch(hijoSeleccionado, (hijoId) => {
-  if (!hijoId) return
-  const hijo = hijosDelPadre.value.find(h => h.id === hijoId)
-  if (hijo?.bus_id) {
-    autobusPadreSeleccionado.value = hijo.bus_id
-  }
-})
 </script>
 
 <style scoped>
-.tracking-container { max-width: 1200px; }
+.tracking-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 2rem;
+  box-sizing: border-box;
+}
 .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; color: #666; }
 .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 .selector-container { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
 .selector-container label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: #333; }
 .bus-selector { width: 100%; padding: 0.8rem; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
-.buses-info { display: grid; gap: 2rem; }
+
+.buses-info {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+}
+
 .bus-card { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.bus-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 1rem; }
-.bus-header h2 { margin: 0; color: #667eea; font-size: 1.5rem; }
-.badge { padding: 0.5rem 1rem; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; }
+.bus-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 1rem; gap: 1rem; }
+.bus-header h2 { margin: 0; color: #667eea; font-size: 1.3rem; }
+.bus-header p { margin: 0; }
+.badge { padding: 0.5rem 1rem; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; white-space: nowrap; }
 .badge.en-movimiento { background: #4caf50; animation: pulse 2s infinite; }
 .badge.detenido { background: #ff9800; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-.bus-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+
+.bus-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
 .detail-item { padding: 1rem; background: #f9f9f9; border-radius: 6px; border-left: 4px solid #667eea; }
-.detail-item strong { display: block; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
+.detail-item strong { display: block; color: #667eea; font-size: 11px; text-transform: uppercase; margin-bottom: 0.5rem; }
+.detail-item span { color: #333; font-size: 14px; }
+
 .map-container { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.map-header h3 { margin: 0; color: #333; }
+.map-header { margin-bottom: 1.5rem; }
+.map-header h3 { margin: 0 0 0.5rem 0; color: #333; }
 .update-time { font-size: 12px; color: #999; margin: 0; }
-.child-selector-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.child-selector-row label { font-weight: 600; color: #333; font-size: 14px; white-space: nowrap; }
-.child-selector { flex: 1; min-width: 200px; padding: 0.6rem 0.8rem; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
-.no-location { background: #fff3cd; color: #856404; padding: 1.5rem; border-radius: 6px; margin-top: 1rem; text-align: center; }
-.location-info { background: #f9f9f9; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-size: 14px; }
-.location-info p { margin: 0.5rem 0; }
-.children-stops { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.children-stops h3 { margin-top: 0; color: #333; margin-bottom: 1.5rem; }
-.stops-list { display: grid; gap: 1rem; }
-.stop-item { padding: 1rem; background: #f9f9f9; border-radius: 6px; border-left: 4px solid #667eea; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-.stop-info { flex: 1; }
-.stop-info strong { display: block; color: #333; margin-bottom: 0.3rem; }
-.stop-location { margin: 0.3rem 0; color: #667eea; font-weight: 500; font-size: 14px; }
-.stop-address { margin: 0.3rem 0; color: #666; font-size: 13px; }
-.ver-btn { padding: 0.6rem 1.2rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
-.ver-btn:hover { background: #5568d3; }
-.no-children { text-align: center; color: #999; padding: 1rem; }
-.eta-container { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-.stat { padding: 1.5rem; background: #f9f9f9; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center; }
-.stat strong { display: block; color: #667eea; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
-.stat p { margin: 0; font-size: 1.5rem; font-weight: bold; color: #333; }
+
+.map { height: min(62vh, 650px); width: 100%; border-radius: 8px; background: #f0f0f0; }
+
+@media (max-width: 768px) {
+  .map {
+    height: 420px;
+  }
+}
+
+.no-location { background: #fff3cd; color: #856404; padding: 1.5rem; border-radius: 6px; text-align: center; margin-top: 1rem; }
+.location-info { background: #f9f9f9; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-size: 13px; display: flex; gap: 2rem; }
+.location-info p { margin: 0; }
+
 .no-buses { background: white; border-radius: 8px; padding: 3rem; text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); color: #666; }
-.info-section { background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin-top: 2rem; }
-.info-section h3 { margin-top: 0; color: #667eea; }
-.info-section ul { margin: 0; padding-left: 2rem; color: #666; }
-.info-section li { margin-bottom: 0.8rem; }
+
+@media (max-width: 768px) {
+  .tracking-container {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+}
 </style>
