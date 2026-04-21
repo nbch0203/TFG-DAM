@@ -85,6 +85,6 @@ El proyecto incluye usuarios de ejemplo para validar los distintos roles. Revisa
 
 - Backend: Node.js, Express, MySQL2
 - Frontend: Vue 3, Vite
-- Android: Kotlin / Java según módulo del proyecto
+- Android: Java según módulo del proyecto
 - Mapa: Leaflet y OpenStreetMap
 - Contenedores: Docker y Docker Compose
