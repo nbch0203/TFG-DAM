@@ -1,0 +1,38 @@
+# Backend (Spring Boot)
+backend/target/
+backend/*.jar
+backend/*.log
+
+# Ignorar archivos de configuración sensibles y plantillas
+backend/node_modules/
+backend/.env
+backend/.env.*
+backend/*.yml
+backend/*.yaml
+backend/*.env
+backend/.coveralls.yml
+backend/node_modules/debug/.coveralls.yml
+
+# Frontend Web (Vue.js)
+frontend-web/node_modules/
+frontend-web/dist/
+frontend-web/.env
+frontend-web/.env.*
+frontend-web/*.env
+
+# Android
+aplicacion-android/.gradle/
+aplicacion-android/build/
+aplicacion-android/local.properties
+aplicacion-android/*.apk
+
+# Generales
+.DS_Store
+.idea/
+*.iml
+
+# Archivos de configuración sensibles
+.env
+
+#Plan de desarrollo
+PLAN.md

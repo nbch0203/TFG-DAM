@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono de autobús vectorial para el marcador del mapa -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Fondo circular azul -->
+    <path
+        android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0"
+        android:fillColor="#1565C0"/>
+
+    <!-- Cuerpo del autobús (blanco) -->
+    <path
+        android:pathData="M10,16 Q10,12 14,12 L34,12 Q38,12 38,16 L38,33 Q38,35 36,35 L33,35 L33,36 Q33,38 31,38 L29,38 Q27,38 27,36 L27,35 L21,35 L21,36 Q21,38 19,38 L17,38 Q15,38 15,36 L15,35 L12,35 Q10,35 10,33 Z"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- Ventanas (azul oscuro) -->
+    <path
+        android:pathData="M13,15 L22,15 L22,22 L13,22 Z"
+        android:fillColor="#1565C0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.5"/>
+    <path
+        android:pathData="M25,15 L35,15 L35,22 L25,22 Z"
+        android:fillColor="#1565C0"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.5"/>
+
+    <!-- Franja naranja en la parte inferior -->
+    <path
+        android:pathData="M10,28 L38,28 L38,31 L10,31 Z"
+        android:fillColor="#FF6D00"/>
+
+    <!-- Ruedas (gris oscuro) -->
+    <path
+        android:pathData="M17,35m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:fillColor="#424242"/>
+    <path
+        android:pathData="M31,35m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:fillColor="#424242"/>
+
+</vector>

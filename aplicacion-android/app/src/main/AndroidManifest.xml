@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permisos de red -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Permisos de ubicación GPS (para conductor) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Permisos para ForegroundService GPS -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- Permiso para notificaciones (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Almacenamiento externo para tiles del mapa -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"
+        tools:ignore="ScopedStorage" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SchoolSafeTrack"
+        android:usesCleartextTraffic="true">
+
+        <!-- Actividad principal: comprueba sesión y redirige -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Login -->
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:exported="false" />
+
+        <!-- Panel del padre -->
+        <activity
+            android:name=".ui.parent.ParentMainActivity"
+            android:exported="false" />
+
+        <!-- Detalle del hijo (desde panel del padre) -->
+        <activity
+            android:name=".ui.parent.ChildDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.parent.ParentMainActivity" />
+
+        <!-- Panel del conductor -->
+        <activity
+            android:name=".ui.driver.DriverMainActivity"
+            android:exported="false" />
+
+        <!-- Perfil del usuario -->
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Servicio GPS en segundo plano para el conductor -->
+        <service
+            android:name=".service.GpsTrackingService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+        <!-- Servicio FCM para notificaciones push -->
+        <!-- NOTA: Para activar FCM, añade google-services.json y el plugin google-services -->
+        <!--
+        <service
+            android:name=".fcm.SchoolFcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        -->
+
+    </application>
+
+</manifest>

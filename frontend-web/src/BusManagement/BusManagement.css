@@ -1,0 +1,197 @@
+/* Estilos generales reutilizables para gestión */
+.gestion-container {
+  margin: 3rem auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 2rem 2rem 2rem 2rem;
+  width: auto;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+.titulo {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #f59e42;
+}
+.mejor-filtros {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.input-filtro {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+.crear-btn {
+  background: #f59e42;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.crear-btn:hover {
+  background: #d97706;
+}
+
+.driver-assign-cell {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.driver-select {
+  min-width: 170px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.32rem 0.45rem;
+}
+
+.driver-current {
+  margin-top: 0.35rem;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.ok-message {
+  color: #166534;
+  background: #ecfdf3;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.8rem;
+}
+.tabla-wrapper {
+  margin-top: 1.5rem;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  width: calc(100% + 3rem);
+  overflow-x: auto;
+}
+.mejor-tabla {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+.sin-resultados {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-top: 2rem;
+}
+.bus-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.bus-table th, .bus-table td {
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.bus-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+.bus-table tr:nth-child(even) {
+  background: #f9fafb;
+}
+.bus-table tr:hover {
+  background: #f0f0f0;
+}
+.action-btn {
+  font-size: 0.97rem;
+  padding: 0.32rem 0.8rem;
+  border-radius: 5px;
+  border: none;
+  margin-right: 0.3rem;
+  margin-bottom: 0.1rem;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(25, 118, 210, 0.08);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.edit-btn {
+  background: #ffa726;
+  color: #fff;
+}
+.edit-btn:disabled {
+  background: #ffe0b2;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.edit-btn:hover:not(:disabled) {
+  background: #fb8c00;
+}
+.delete-btn {
+  background: #e53935;
+  color: #fff;
+}
+.delete-btn:disabled {
+  background: #ffcdd2;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.delete-btn:hover:not(:disabled) {
+  background: #b71c1c;
+}
+.crear-btn {
+  background: #f59e42;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.crear-btn:hover {
+  background: #d97706;
+}
+.estado-tag {
+  display: inline-block;
+  padding: 0.13em 0.5em;
+  border-radius: 12px;
+  font-size: 0.92em;
+  font-weight: 600;
+  color: #fff;
+}
+.estado-tag.activo {
+  background: #43a047;
+}
+.estado-tag.mantenimiento {
+  background: #fbc02d;
+  color: #333;
+}
+.estado-tag.inactivo {
+  background: #757575;
+}
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  min-width: 320px;
+}
+.error {
+  color: #d32f2f;
+  margin-top: 1rem;
+}

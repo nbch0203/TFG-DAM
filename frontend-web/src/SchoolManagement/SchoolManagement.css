@@ -1,0 +1,119 @@
+.gestion-container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 2rem;
+}
+
+.titulo {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #2563eb;
+}
+
+.mejor-filtros {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.input-filtro {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+
+.crear-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 5px;
+  font-weight: 600;
+}
+
+.crear-btn:hover {
+  background: #1d4ed8;
+}
+
+.tabla-wrapper {
+  margin-top: 1rem;
+}
+
+.mejor-tabla {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.colegio-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.colegio-table th,
+.colegio-table td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.colegio-table th {
+  background: #f3f4f6;
+}
+
+.colegio-table tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: 4px;
+  margin-right: 0.4rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.sin-resultados {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.vertical-form form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.vertical-form input,
+.vertical-form select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.error {
+  color: #dc2626;
+  margin-top: 0.75rem;
+}

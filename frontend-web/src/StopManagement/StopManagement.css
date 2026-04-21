@@ -1,0 +1,134 @@
+/* Estilos generales reutilizables para gestión */
+.gestion-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+}
+.titulo {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #f59e42;
+}
+.mejor-filtros {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.input-filtro {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+.crear-btn {
+  background: #f59e42;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.crear-btn:hover {
+  background: #d97706;
+}
+.tabla-wrapper {
+  margin-top: 1.5rem;
+}
+.mejor-tabla {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sin-resultados {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-top: 2rem;
+}
+/* Estilos para la gestión de paradas */
+.parada-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.parada-table th, .parada-table td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+.parada-table th {
+  background: #f3f4f6;
+}
+.parada-table tr:nth-child(even) {
+  background: #f9fafb;
+}
+.filtros label {
+  margin-right: 1rem;
+}
+button {
+  background: #f59e42;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+button:hover {
+  background: #d97706;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.error {
+  color: #dc2626;
+  margin-top: 1rem;
+}
+.estudiantes-lista {
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 0.8rem;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+.checkbox-item {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+.checkbox-item:hover {
+  background: #f0f0f0;
+}
+.checkbox-item input[type="checkbox"] {
+  margin-right: 0.6rem;
+  cursor: pointer;
+}
+.estudiantes-select {
+  min-height: 170px;
+  padding: 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #fff;
+}
+.ayuda-multiselect {
+  display: block;
+  margin-top: 0.35rem;
+  color: #6b7280;
+  font-size: 12px;
+}

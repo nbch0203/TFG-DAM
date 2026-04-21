@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Paleta principal -->
+    <color name="primary_blue">#FF1565C0</color>
+    <color name="primary_blue_dark">#FF0D47A1</color>
+    <color name="primary_blue_light">#FF1976D2</color>
+    <color name="accent_orange">#FFFF6D00</color>
+    <color name="accent_orange_light">#FFFF9E40</color>
+
+    <!-- Fondos -->
+    <color name="background_light">#FFF5F7FA</color>
+    <color name="surface_white">#FFFFFFFF</color>
+
+    <!-- Texto -->
+    <color name="text_primary">#FF212121</color>
+    <color name="text_secondary">#FF757575</color>
+    <color name="text_on_primary">#FFFFFFFF</color>
+
+    <!-- Estados -->
+    <color name="error_red">#FFD32F2F</color>
+    <color name="status_active">#FF388E3C</color>
+    <color name="status_maintenance">#FFF57C00</color>
+    <color name="status_pending">#FF1565C0</color>
+    <color name="status_finished">#FF757575</color>
+
+    <!-- Incidencias por tipo -->
+    <color name="incident_retraso">#FFF57C00</color>
+    <color name="incident_mecanico">#FFD32F2F</color>
+    <color name="incident_accidente">#FFB71C1C</color>
+    <color name="incident_clima">#FF1565C0</color>
+    <color name="incident_otro">#FF616161</color>
+
+    <!-- Avatares de alumnos (variedad de colores) -->
+    <color name="avatar_1">#FF1565C0</color>
+    <color name="avatar_2">#FF388E3C</color>
+    <color name="avatar_3">#FFF57C00</color>
+    <color name="avatar_4">#FF7B1FA2</color>
+    <color name="avatar_5">#FFC62828</color>
+    <color name="avatar_6">#FF00838F</color>
+
+    <!-- Divisores -->
+    <color name="divider">#FFE0E0E0</color>
+</resources>
