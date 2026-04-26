@@ -39,8 +39,11 @@ import com.schoolsafetrack.app.ui.login.LoginActivity;
 import com.schoolsafetrack.app.ui.profile.ProfileActivity;
 import com.schoolsafetrack.app.ui.profile.ProfileViewModel;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DriverMainActivity extends AppCompatActivity implements StopsAdapter.StopActionListener {
@@ -48,6 +51,16 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private static final String NAV_PREFS = "driver_nav_prefs";
     private static final String NAV_DEFAULT_PACKAGE = "default_maps_package";
+
+    private static class MapAppOption {
+        final String packageName;
+        final String label;
+
+        MapAppOption(String packageName, String label) {
+            this.packageName = packageName;
+            this.label = label;
+        }
+    }
 
     private ActivityDriverMainBinding binding;
     private DriverViewModel viewModel;
@@ -212,20 +225,22 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         }
 
         String destination = stop.getDireccion().trim();
-        Intent geoIntent = buildGeoIntent(destination);
-        List<ResolveInfo> mapApps = getPackageManager().queryIntentActivities(geoIntent, 0);
-        if (mapApps == null || mapApps.isEmpty()) {
+        List<Intent> candidateIntents = buildMapIntents(destination);
+        List<MapAppOption> mapApps = queryMapApps(candidateIntents);
+        if (mapApps.isEmpty()) {
             Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
             return;
         }
 
         String defaultPackage = getNavPrefs().getString(NAV_DEFAULT_PACKAGE, null);
-        if (!TextUtils.isEmpty(defaultPackage) && isPackageInResolvers(defaultPackage, mapApps)) {
-            launchWithPackage(geoIntent, defaultPackage);
+        if (!TextUtils.isEmpty(defaultPackage) && isPackageInOptions(defaultPackage, mapApps)) {
+            if (!launchWithPackage(candidateIntents, defaultPackage)) {
+                getNavPrefs().edit().remove(NAV_DEFAULT_PACKAGE).apply();
+            }
             return;
         }
 
-        showMapsAppPicker(geoIntent, mapApps);
+        showMapsAppPicker(candidateIntents, mapApps);
     }
 
     private Intent buildGeoIntent(String destination) {
@@ -233,24 +248,64 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         return new Intent(Intent.ACTION_VIEW, geoUri);
     }
 
+    private Intent buildNavigationIntent(String destination) {
+        Uri navUri = Uri.parse("google.navigation:q=" + Uri.encode(destination) + "&mode=d");
+        return new Intent(Intent.ACTION_VIEW, navUri);
+    }
+
+    private Intent buildWebMapsIntent(String destination) {
+        Uri webUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
+                + Uri.encode(destination) + "&travelmode=driving");
+        return new Intent(Intent.ACTION_VIEW, webUri);
+    }
+
+    private List<Intent> buildMapIntents(String destination) {
+        List<Intent> intents = new ArrayList<>();
+        intents.add(buildNavigationIntent(destination));
+        intents.add(buildGeoIntent(destination));
+        intents.add(buildWebMapsIntent(destination));
+        return intents;
+    }
+
+    private List<MapAppOption> queryMapApps(List<Intent> candidateIntents) {
+        Map<String, String> uniqueApps = new LinkedHashMap<>();
+        for (Intent intent : candidateIntents) {
+            List<ResolveInfo> resolvers = getPackageManager().queryIntentActivities(intent, 0);
+            if (resolvers == null) continue;
+            for (ResolveInfo info : resolvers) {
+                if (info == null || info.activityInfo == null) continue;
+                String packageName = info.activityInfo.packageName;
+                if (!uniqueApps.containsKey(packageName)) {
+                    String label = String.valueOf(info.loadLabel(getPackageManager()));
+                    uniqueApps.put(packageName, label);
+                }
+            }
+        }
+
+        List<MapAppOption> apps = new ArrayList<>();
+        for (Map.Entry<String, String> entry : uniqueApps.entrySet()) {
+            apps.add(new MapAppOption(entry.getKey(), entry.getValue()));
+        }
+        return apps;
+    }
+
     private SharedPreferences getNavPrefs() {
         return getSharedPreferences(NAV_PREFS, MODE_PRIVATE);
     }
 
-    private boolean isPackageInResolvers(String packageName, List<ResolveInfo> resolvers) {
-        for (ResolveInfo info : resolvers) {
-            if (info != null && info.activityInfo != null
-                    && packageName.equals(info.activityInfo.packageName)) {
+    private boolean isPackageInOptions(String packageName, List<MapAppOption> options) {
+        for (MapAppOption option : options) {
+            if (option != null && packageName.equals(option.packageName)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void showMapsAppPicker(Intent baseIntent, List<ResolveInfo> mapApps) {
+    private void showMapsAppPicker(List<Intent> candidateIntents, List<MapAppOption> mapApps) {
         String[] appNames = new String[mapApps.size()];
         for (int i = 0; i < mapApps.size(); i++) {
-            appNames[i] = mapApps.get(i).loadLabel(getPackageManager()).toString();
+            appNames[i] = mapApps.get(i).label;
         }
 
         final int[] selectedIndex = {0};
@@ -262,27 +317,31 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
                 .setSingleChoiceItems(appNames, 0, (dialog, which) -> selectedIndex[0] = which)
                 .setView(alwaysDefaultCheckbox)
                 .setPositiveButton(R.string.open_maps, (dialog, which) -> {
-                    ResolveInfo selected = mapApps.get(selectedIndex[0]);
-                    String packageName = selected.activityInfo.packageName;
+                    String packageName = mapApps.get(selectedIndex[0]).packageName;
 
                     if (alwaysDefaultCheckbox.isChecked()) {
                         getNavPrefs().edit().putString(NAV_DEFAULT_PACKAGE, packageName).apply();
                     }
 
-                    launchWithPackage(baseIntent, packageName);
+                    launchWithPackage(candidateIntents, packageName);
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
-    private void launchWithPackage(Intent baseIntent, String packageName) {
-        Intent intent = new Intent(baseIntent);
-        intent.setPackage(packageName);
-        try {
-            startActivity(intent);
-        } catch (ActivityNotFoundException ex) {
-            Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
+    private boolean launchWithPackage(List<Intent> candidateIntents, String packageName) {
+        for (Intent baseIntent : candidateIntents) {
+            Intent intent = new Intent(baseIntent);
+            intent.setPackage(packageName);
+            try {
+                startActivity(intent);
+                return true;
+            } catch (ActivityNotFoundException ignored) {
+                // Prueba siguiente intent soportado por el mismo paquete.
+            }
         }
+        Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
+        return false;
     }
 
     private void showIncidentDialog() {
