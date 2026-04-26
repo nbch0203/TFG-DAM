@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Paleta principal -->
+    <color name="primary_blue">#FF2D7BD8</color>
+    <color name="primary_blue_dark">#FF1A4D87</color>
+    <color name="primary_blue_light">#FF4B95F5</color>
+    <color name="accent_orange">#FFFF8A3D</color>
+    <color name="accent_orange_light">#FFFFB067</color>
+
+    <!-- Fondos -->
+    <color name="background_light">#FF121417</color>
+    <color name="surface_white">#FF1B1F24</color>
+
+    <!-- Texto -->
+    <color name="text_primary">#FFECEFF4</color>
+    <color name="text_secondary">#FFB2BCC8</color>
+    <color name="text_on_primary">#FFFFFFFF</color>
+
+    <!-- Estados -->
+    <color name="error_red">#FFFF6B6B</color>
+    <color name="status_active">#FF5BC078</color>
+    <color name="status_maintenance">#FFFFB74D</color>
+    <color name="status_pending">#FF7DB9FF</color>
+    <color name="status_finished">#FF9AA4B2</color>
+
+    <!-- Incidencias por tipo -->
+    <color name="incident_retraso">#FFFFB74D</color>
+    <color name="incident_mecanico">#FFFF6B6B</color>
+    <color name="incident_accidente">#FFFF8A80</color>
+    <color name="incident_clima">#FF7DB9FF</color>
+    <color name="incident_otro">#FF9AA4B2</color>
+
+    <!-- Avatares -->
+    <color name="avatar_1">#FF4B95F5</color>
+    <color name="avatar_2">#FF5BC078</color>
+    <color name="avatar_3">#FFFFB74D</color>
+    <color name="avatar_4">#FFB388FF</color>
+    <color name="avatar_5">#FFFF8A80</color>
+    <color name="avatar_6">#FF4DD0E1</color>
+
+    <!-- Divisores -->
+    <color name="divider">#FF2E3540</color>
+</resources>
