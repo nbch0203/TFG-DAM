@@ -1,15 +1,19 @@
 package com.schoolsafetrack.app.ui.driver;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import android.widget.TextView;
@@ -42,6 +46,8 @@ import java.util.Set;
 public class DriverMainActivity extends AppCompatActivity implements StopsAdapter.StopActionListener {
 
     private static final int LOCATION_PERMISSION_REQUEST = 100;
+    private static final String NAV_PREFS = "driver_nav_prefs";
+    private static final String NAV_DEFAULT_PACKAGE = "default_maps_package";
 
     private ActivityDriverMainBinding binding;
     private DriverViewModel viewModel;
@@ -206,21 +212,75 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         }
 
         String destination = stop.getDireccion().trim();
-        Uri navUri = Uri.parse("google.navigation:q=" + Uri.encode(destination) + "&mode=d");
-        Intent mapsIntent = new Intent(Intent.ACTION_VIEW, navUri);
-        mapsIntent.setPackage("com.google.android.apps.maps");
-
-        if (mapsIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(mapsIntent);
+        Intent geoIntent = buildGeoIntent(destination);
+        List<ResolveInfo> mapApps = getPackageManager().queryIntentActivities(geoIntent, 0);
+        if (mapApps == null || mapApps.isEmpty()) {
+            Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Uri webUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
-                + Uri.encode(destination) + "&travelmode=driving");
-        Intent webIntent = new Intent(Intent.ACTION_VIEW, webUri);
-        if (webIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(webIntent);
-        } else {
+        String defaultPackage = getNavPrefs().getString(NAV_DEFAULT_PACKAGE, null);
+        if (!TextUtils.isEmpty(defaultPackage) && isPackageInResolvers(defaultPackage, mapApps)) {
+            launchWithPackage(geoIntent, defaultPackage);
+            return;
+        }
+
+        showMapsAppPicker(geoIntent, mapApps);
+    }
+
+    private Intent buildGeoIntent(String destination) {
+        Uri geoUri = Uri.parse("geo:0,0?q=" + Uri.encode(destination));
+        return new Intent(Intent.ACTION_VIEW, geoUri);
+    }
+
+    private SharedPreferences getNavPrefs() {
+        return getSharedPreferences(NAV_PREFS, MODE_PRIVATE);
+    }
+
+    private boolean isPackageInResolvers(String packageName, List<ResolveInfo> resolvers) {
+        for (ResolveInfo info : resolvers) {
+            if (info != null && info.activityInfo != null
+                    && packageName.equals(info.activityInfo.packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void showMapsAppPicker(Intent baseIntent, List<ResolveInfo> mapApps) {
+        String[] appNames = new String[mapApps.size()];
+        for (int i = 0; i < mapApps.size(); i++) {
+            appNames[i] = mapApps.get(i).loadLabel(getPackageManager()).toString();
+        }
+
+        final int[] selectedIndex = {0};
+        CheckBox alwaysDefaultCheckbox = new CheckBox(this);
+        alwaysDefaultCheckbox.setText(R.string.maps_use_default_always);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.maps_choose_app_title)
+                .setSingleChoiceItems(appNames, 0, (dialog, which) -> selectedIndex[0] = which)
+                .setView(alwaysDefaultCheckbox)
+                .setPositiveButton(R.string.open_maps, (dialog, which) -> {
+                    ResolveInfo selected = mapApps.get(selectedIndex[0]);
+                    String packageName = selected.activityInfo.packageName;
+
+                    if (alwaysDefaultCheckbox.isChecked()) {
+                        getNavPrefs().edit().putString(NAV_DEFAULT_PACKAGE, packageName).apply();
+                    }
+
+                    launchWithPackage(baseIntent, packageName);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void launchWithPackage(Intent baseIntent, String packageName) {
+        Intent intent = new Intent(baseIntent);
+        intent.setPackage(packageName);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException ex) {
             Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
         }
     }

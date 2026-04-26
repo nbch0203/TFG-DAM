@@ -66,6 +66,9 @@
     <string name="schedule">Horario</string>
     <string name="stop_address_not_available">Esta parada no tiene dirección disponible</string>
     <string name="maps_app_not_found">No se encontró una app de mapas</string>
+    <string name="maps_choose_app_title">Elige app de mapas</string>
+    <string name="maps_use_default_always">Usar esta app siempre como predeterminada</string>
+    <string name="open_maps">Abrir</string>
 
     <!-- GPS Service -->
     <string name="gps_channel_name">Seguimiento GPS</string>
