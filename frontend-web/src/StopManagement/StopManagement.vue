@@ -43,6 +43,8 @@
         <form @submit.prevent="guardarParada">
           <label>Nombre:</label>
           <input v-model="editado.nombre" required />
+          <label>Dirección:</label>
+          <input v-model="editado.direccion" required placeholder="Calle, número, ciudad" />
           <label>Ruta:</label>
           <select v-model="editado.route_id" required>
             <option disabled value="">Selecciona una ruta</option>
@@ -54,10 +56,6 @@
           <select v-model="editado.school_id" required>
             <option v-for="school in schools" :key="school.id" :value="school.id">{{ school.nombre }}</option>
           </select>
-          <label>Latitud:</label>
-          <input v-model="editado.latitud" required type="number" step="any" />
-          <label>Longitud:</label>
-          <input v-model="editado.longitud" required type="number" step="any" />
           <label>Asignar a estudiantes:</label>
           <select v-model="estudiantesSeleccionados" multiple class="estudiantes-select">
             <option v-if="students.length === 0" disabled value="">
@@ -150,6 +148,7 @@ async function abrirEditar(stop) {
 function abrirCrear() {
   editado.value = {
     nombre: '',
+    direccion: '',
     route_id: '',
     school_id: filtroSchool.value || '',
     latitud: '',
@@ -189,6 +188,7 @@ function haversine(p1, p2) {
 function reordenarParadas(paradas, origen = null) {
   // Skip reorder if fewer than 2 stops or no coordinates available
   const conCoordenadas = paradas.filter(p => (p.lat ?? p.latitud) != null && (p.lng ?? p.longitud) != null)
+  const sinCoordenadas = paradas.filter(p => (p.lat ?? p.latitud) == null || (p.lng ?? p.longitud) == null)
   if (conCoordenadas.length < 2) {
     return paradas.map((p, i) => ({ ...p, orden: i + 1 }))
   }
@@ -210,7 +210,7 @@ function reordenarParadas(paradas, origen = null) {
     ruta.push(actual)
   }
 
-  return ruta.map((p, i) => ({ ...p, orden: i + 1 }))
+  return [...ruta, ...sinCoordenadas].map((p, i) => ({ ...p, orden: i + 1 }))
 }
 
 // ── After saving a stop, reorder all stops in the same route ────────────────

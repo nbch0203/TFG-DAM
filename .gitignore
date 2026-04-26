@@ -33,6 +33,6 @@ aplicacion-android/*.apk
 
 # Archivos de configuración sensibles
 .env
-
+.pem
 #Plan de desarrollo
 PLAN.md

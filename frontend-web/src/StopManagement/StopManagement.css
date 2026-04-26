@@ -88,9 +88,45 @@ button:hover {
 }
 .modal-content {
   background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
+  padding: 1.5rem;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: min(92vw, 640px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.vertical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vertical-form label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.vertical-form input,
+.vertical-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 .error {
   color: #dc2626;
@@ -131,4 +167,37 @@ button:hover {
   margin-top: 0.35rem;
   color: #6b7280;
   font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .gestion-container {
+    margin: 0.75rem;
+    padding: 1rem;
+  }
+
+  .titulo {
+    font-size: 1.5rem;
+  }
+
+  .modal {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-height: 92vh;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .vertical-form button {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .vertical-form input,
+  .vertical-form select,
+  .estudiantes-select {
+    font-size: 16px;
+  }
 }

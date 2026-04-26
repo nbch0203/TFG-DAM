@@ -9,6 +9,7 @@ import bcrypt from 'bcrypt';
 import os from 'os';
 import { exec } from 'child_process';
 import util from 'util';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -77,7 +78,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  ssl: {
+    rejectUnauthorized: true,
+    ca: fs.readFileSync('./global-bundle.pem')
+  }
 });
 
 const columnExists = async (tableName, columnName) => {
@@ -179,6 +184,15 @@ const ensureOperationalTables = async () => {
   if (!stopsHasSchool) {
     await pool.query('ALTER TABLE stops ADD COLUMN school_id BIGINT NULL');
     await pool.query('ALTER TABLE stops ADD INDEX idx_stops_school (school_id)');
+  }
+
+  // Algunas instalaciones legacy tienen latitud/longitud como NOT NULL.
+  // El formulario permite crear paradas sin coordenadas, por lo que deben admitir NULL.
+  try {
+    await pool.query('ALTER TABLE stops MODIFY latitud DECIMAL(10,8) NULL');
+    await pool.query('ALTER TABLE stops MODIFY longitud DECIMAL(11,8) NULL');
+  } catch (err) {
+    console.warn('No se pudo ajustar latitud/longitud de stops para permitir NULL:', err.message);
   }
 
   const studentsHasSchool = await columnExists('students', 'school_id');
@@ -331,8 +345,8 @@ const findOne = async (res, query, params = []) => {
 // Ejecuta un INSERT 
 const create = async (res, query, params) => {
   try {
-    await pool.query(query, params);
-    res.status(201).json({ success: true });
+    const [result] = await pool.query(query, params);
+    res.status(201).json({ success: true, id: result.insertId });
   } catch (err) {
     handleError(res, err, 'Error al crear registro');
   }
@@ -1495,6 +1509,8 @@ app.get('/api/stops', (req, res) => {
 // Crear nueva
 app.post('/api/stops', (req, res) => {
   const { route_id, nombre, direccion, latitud, longitud, orden, hora_estimada, radio_proximidad, school_id } = req.body;
+  const safeLatitud = latitud == null || latitud === '' ? 0 : latitud;
+  const safeLongitud = longitud == null || longitud === '' ? 0 : longitud;
   
   if (!nombre || !route_id) {
     return res.status(400).json({ error: 'Nombre y route_id requeridos' });
@@ -1502,13 +1518,15 @@ app.post('/api/stops', (req, res) => {
   
   create(res,
     'INSERT INTO stops (route_id, nombre, direccion, latitud, longitud, orden, hora_estimada, radio_proximidad, school_id, activa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)',
-    [route_id, nombre, direccion || '', latitud || null, longitud || null, orden || 1, hora_estimada || null, radio_proximidad || 500, school_id || null]
+    [route_id, nombre, direccion || '', safeLatitud, safeLongitud, orden || 1, hora_estimada || null, radio_proximidad || 500, school_id || null]
   );
 });
 
 // Actualizar
 app.put('/api/stops/:id', (req, res) => {
   const { route_id, nombre, direccion, latitud, longitud, orden, hora_estimada, radio_proximidad, school_id } = req.body;
+  const safeLatitud = latitud == null || latitud === '' ? 0 : latitud;
+  const safeLongitud = longitud == null || longitud === '' ? 0 : longitud;
   
   if (!nombre || !route_id) {
     return res.status(400).json({ error: 'Nombre y route_id requeridos' });
@@ -1516,7 +1534,7 @@ app.put('/api/stops/:id', (req, res) => {
   
   update(res,
     'UPDATE stops SET route_id=?, nombre=?, direccion=?, latitud=?, longitud=?, orden=?, hora_estimada=?, radio_proximidad=?, school_id=? WHERE id=?',
-    [route_id, nombre, direccion || '', latitud || null, longitud || null, orden || 1, hora_estimada || null, radio_proximidad || 500, school_id || null, req.params.id]
+    [route_id, nombre, direccion || '', safeLatitud, safeLongitud, orden || 1, hora_estimada || null, radio_proximidad || 500, school_id || null, req.params.id]
   );
 });
 
