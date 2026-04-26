@@ -56,9 +56,10 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private Runnable pollRunnable;
     private boolean pollingActive = false;
     private boolean hasCenteredOnBus = false;
+    private boolean suppressSpinnerCallback = false;
 
     // Child-follow: child id that is currently selected (null = show all)
-    private Long followedBusId = null;
+    private Long followedChildId = null;
     private List<Child> latestChildren = new ArrayList<>();
 
     @Override
@@ -117,6 +118,10 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                     binding.layoutChildren.setVisibility(View.GONE);
                     binding.layoutMap.setVisibility(View.VISIBLE);
                     binding.tvEmptyChildren.setVisibility(View.GONE);
+                    // Al volver a la pestaña mapa, recéntrate una vez en la última ubicación recibida.
+                    hasCenteredOnBus = false;
+                    List<Bus> currentBuses = viewModel.getBuses().getValue();
+                    if (currentBuses != null) updateMapWithBuses(currentBuses);
                     binding.mapView.invalidate();
                     startPolling();
                 }
@@ -138,6 +143,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         MapView map = binding.mapView;
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
+        map.setBuiltInZoomControls(true);
         map.getController().setZoom(12.0);
     }
 
@@ -152,12 +158,13 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         binding.spinnerFollowChild.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (suppressSpinnerCallback) return;
                 if (position == 0) {
                     // "— Todos —" selected
-                    followedBusId = null;
+                    followedChildId = null;
                 } else {
                     Child selected = latestChildren.get(position - 1);
-                    followedBusId = selected.getBusId();
+                    followedChildId = selected.getId();
                 }
                 hasCenteredOnBus = false;
                 // Re-render map immediately with current data
@@ -167,7 +174,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                followedBusId = null;
+                followedChildId = null;
             }
         });
     }
@@ -185,7 +192,21 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, labels);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        int selectedIndex = 0;
+        if (followedChildId != null) {
+            for (int i = 0; i < latestChildren.size(); i++) {
+                if (latestChildren.get(i).getId() == followedChildId) {
+                    selectedIndex = i + 1;
+                    break;
+                }
+            }
+        }
+
+        suppressSpinnerCallback = true;
         binding.spinnerFollowChild.setAdapter(adapter);
+        binding.spinnerFollowChild.setSelection(selectedIndex, false);
+        suppressSpinnerCallback = false;
     }
 
     // ── Auto-refresh ──────────────────────────────────────────────────────────
@@ -198,7 +219,6 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             public void run() {
                 if (!pollingActive) return;
                 viewModel.loadBuses(session.getUserId());
-                viewModel.loadChildren(session.getUserId());
                 pollHandler.postDelayed(this, POLL_INTERVAL_MS);
             }
         };
@@ -276,6 +296,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         }
 
         // Filter to followed bus if a child is selected
+        Long followedBusId = getFollowedBusId();
         List<Bus> visibleBuses = new ArrayList<>();
         for (Bus bus : buses) {
             if (followedBusId == null || followedBusId == bus.getId()) {
@@ -306,14 +327,24 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             if (firstMarker == null) firstMarker = marker;
         }
 
-        // If a child is followed, center on that bus on first load (don't re-center on every poll)
-        if (firstMarker != null && !hasCenteredOnBus) {
+        // Solo centra automáticamente cuando se sigue a un hijo concreto.
+        if (followedBusId != null && firstMarker != null && !hasCenteredOnBus) {
             map.getController().animateTo(firstMarker.getPosition());
             map.getController().setZoom(15.0);
             hasCenteredOnBus = true;
         }
 
         map.invalidate();
+    }
+
+    private Long getFollowedBusId() {
+        if (followedChildId == null) return null;
+        for (Child child : latestChildren) {
+            if (child.getId() == followedChildId) {
+                return child.getBusId();
+            }
+        }
+        return null;
     }
 
     @Override
