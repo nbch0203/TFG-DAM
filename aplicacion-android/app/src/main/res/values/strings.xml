@@ -64,6 +64,8 @@
     <string name="route_status">Estado de la ruta</string>
     <string name="bus_plate">Matrícula</string>
     <string name="schedule">Horario</string>
+    <string name="stop_address_not_available">Esta parada no tiene dirección disponible</string>
+    <string name="maps_app_not_found">No se encontró una app de mapas</string>
 
     <!-- GPS Service -->
     <string name="gps_channel_name">Seguimiento GPS</string>

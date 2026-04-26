@@ -21,6 +21,7 @@ public class StopsAdapter extends RecyclerView.Adapter<StopsAdapter.ViewHolder> 
     public interface StopActionListener {
         void onArrival(Stop stop);
         void onDeparture(Stop stop);
+        void onStopClick(Stop stop);
     }
 
     private List<Stop> stops = new ArrayList<>();
@@ -92,6 +93,10 @@ public class StopsAdapter extends RecyclerView.Adapter<StopsAdapter.ViewHolder> 
             });
             btnDeparture.setOnClickListener(v -> {
                 if (listener != null) listener.onDeparture(stop);
+            });
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) listener.onStopClick(stop);
             });
         }
     }

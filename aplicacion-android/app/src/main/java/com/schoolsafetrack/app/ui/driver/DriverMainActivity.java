@@ -2,8 +2,10 @@ package com.schoolsafetrack.app.ui.driver;
 
 import android.Manifest;
 import android.content.Intent;
+import android.net.Uri;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -190,6 +192,37 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
         if (currentRoute == null) return;
         viewModel.checkIn(currentRoute.getAssignmentId(), stop.getId(),
                 session.getUserId(), "DEPARTURE", null);
+    }
+
+    @Override
+    public void onStopClick(Stop stop) {
+        openNavigationToStop(stop);
+    }
+
+    private void openNavigationToStop(Stop stop) {
+        if (stop == null || TextUtils.isEmpty(stop.getDireccion())) {
+            Toast.makeText(this, R.string.stop_address_not_available, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String destination = stop.getDireccion().trim();
+        Uri navUri = Uri.parse("google.navigation:q=" + Uri.encode(destination) + "&mode=d");
+        Intent mapsIntent = new Intent(Intent.ACTION_VIEW, navUri);
+        mapsIntent.setPackage("com.google.android.apps.maps");
+
+        if (mapsIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapsIntent);
+            return;
+        }
+
+        Uri webUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
+                + Uri.encode(destination) + "&travelmode=driving");
+        Intent webIntent = new Intent(Intent.ACTION_VIEW, webUri);
+        if (webIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(webIntent);
+        } else {
+            Toast.makeText(this, R.string.maps_app_not_found, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showIncidentDialog() {
