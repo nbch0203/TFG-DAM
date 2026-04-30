@@ -4,13 +4,13 @@
       <nav>
         <ul>
           <li :class="{active: page==='dashboard'}" @click="setPage('dashboard')">Dashboard</li>
-          <li :class="{active: page==='buses'}" @click="setPage('buses')">Gestión de autobuses</li>
-          <li :class="{active: page==='users'}" @click="setPage('users')">Gestión de usuarios</li>
           <li :class="{active: page==='schools'}" @click="setPage('schools')">Gestión de colegios</li>
           <li :class="{active: page==='students'}" @click="setPage('students')">Gestión de alumnos</li>
-          <li :class="{active: page==='routes'}" @click="setPage('routes')">Gestión de rutas</li>
           <li :class="{active: page==='stops'}" @click="setPage('stops')">Gestión de paradas</li>
-          <li :class="{active: page==='messages'}" @click="setPage('messages')">Mensajes</li>
+          <li :class="{active: page==='buses'}" @click="setPage('buses')">Gestión de autobuses</li>
+          <li :class="{active: page==='routes'}" @click="setPage('routes')">Gestión de rutas</li>
+          <li :class="{active: page==='users'}" @click="setPage('users')">Gestión de usuarios</li>
+          <li :class="{active: page==='messages'}" @click="setPage('messages')">Mensajería</li>
         </ul>
       </nav>
     </aside>

@@ -54,9 +54,6 @@ Permite a **padres**, **conductores** y **administración del colegio** coordina
 | 🔐 Autenticación | JWT |
 | 🗺 Mapas | OpenStreetMap (Leaflet.js / osmdroid) |
 | 📢 Notificaciones push | Firebase Cloud Messaging (FCM) |
-| ⚙️ CI/CD | GitHub Actions |
-| 🚀 Despliegue | Railway / Render (backend + BD) |
-
 ---
 
 ## 💾 Modelo de Base de Datos
