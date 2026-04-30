@@ -1,0 +1,532 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  SchoolSafeTrack demo stack on AWS using one EC2 instance + RDS MySQL.
+  The EC2 clones the repo and starts the Docker Compose setup (backend + frontend only).
+  MySQL runs on RDS instead of a Docker container.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Project settings
+        Parameters:
+          - ProjectName
+          - RepositoryUrl
+          - RepositoryBranch
+      - Label:
+          default: Application ports
+        Parameters:
+          - FrontendPort
+          - BackendPort
+      - Label:
+          default: Database credentials (RDS)
+        Parameters:
+          - MysqlDatabase
+          - MysqlUser
+          - MysqlPassword
+          - MysqlRootPassword
+      - Label:
+          default: Instance access
+        Parameters:
+          - InstanceType
+          - KeyName
+    ParameterLabels:
+      RepositoryUrl:
+        default: Git repository URL
+      RepositoryBranch:
+        default: Git branch to deploy
+      KeyName:
+        default: EC2 Key Pair name (vockey)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: schoolsafetrack
+    Description: Prefix used for AWS resource names.
+
+  RepositoryUrl:
+    Type: String
+    Default: https://github.com/nbch0203/TFG-DAM.git
+    Description: Git repository that contains docker-compose.yml and the app code.
+
+  RepositoryBranch:
+    Type: String
+    Default: main
+    Description: Branch to clone on the EC2 instance.
+
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 size for the demo stack.
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: vockey
+    Description: Name of an existing EC2 key pair for SSH access. Use "vockey" in AWS Academy labs.
+
+  FrontendPort:
+    Type: Number
+    Default: 5173
+    Description: Port used by the Vite frontend.
+
+  BackendPort:
+    Type: Number
+    Default: 3000
+    Description: Port used by the Express backend.
+
+  MysqlRootPassword:
+    Type: String
+    NoEcho: true
+    Default: rootpassword
+    Description: Master password for the RDS instance (admin user).
+
+  MysqlDatabase:
+    Type: String
+    Default: schoolsafetrack
+    Description: Database name to create in RDS.
+
+  MysqlUser:
+    Type: String
+    Default: tfg_user
+    Description: Application MySQL user.
+
+  MysqlPassword:
+    Type: String
+    NoEcho: true
+    Default: tfg_password
+    Description: Password for the application MySQL user.
+
+Resources:
+
+  # ── VPC & NETWORKING ──────────────────────────────────────────────────────
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-igw
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-public-subnet
+
+  # Segunda subred pública necesaria para el Subnet Group de RDS
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-public-subnet-2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-public-rt
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # ── SECURITY GROUPS ───────────────────────────────────────────────────────
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH + frontend + backend access
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: !Ref BackendPort
+          ToPort: !Ref BackendPort
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: !Ref FrontendPort
+          ToPort: !Ref FrontendPort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-ec2-sg
+
+  RdsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow MySQL access only from EC2
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref InstanceSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-rds-sg
+
+  # ── RDS ───────────────────────────────────────────────────────────────────
+  RdsSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for SchoolSafeTrack RDS
+      SubnetIds:
+        - !Ref PublicSubnet
+        - !Ref PublicSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-rds-subnet-group
+
+  RdsInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    Properties:
+      DBInstanceIdentifier: !Sub ${ProjectName}-bbdd
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      EngineVersion: "8.0"
+      MasterUsername: admin
+      MasterUserPassword: !Ref MysqlRootPassword
+      DBName: !Ref MysqlDatabase
+      AllocatedStorage: "20"
+      StorageType: gp2
+      MultiAZ: false
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !Ref RdsSecurityGroup
+      DBSubnetGroupName: !Ref RdsSubnetGroup
+      BackupRetentionPeriod: 0
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-rds
+
+  # ── EC2 ───────────────────────────────────────────────────────────────────
+  AppInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: RdsInstance
+    Properties:
+      # Amazon Linux 2023 (compatible con dnf/yum)
+      ImageId: !Sub "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 50
+            VolumeType: gp3
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - DeviceIndex: 0
+          SubnetId: !Ref PublicSubnet
+          AssociatePublicIpAddress: true
+          GroupSet:
+            - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-app
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          exec > /var/log/user-data.log 2>&1
+
+          # ── Instalar dependencias ──────────────────────────────────────
+          dnf update -y
+          dnf install -y git curl docker mariadb105
+
+          systemctl enable docker
+          systemctl start docker
+          usermod -aG docker ec2-user
+
+          # ── Docker Compose ─────────────────────────────────────────────
+          COMPOSE_VERSION="v2.29.7"
+          curl -fsSL "https://github.com/docker/compose/releases/download/${!COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+            -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+          # ── Clonar repositorio ─────────────────────────────────────────
+          mkdir -p /opt/${ProjectName}
+          chown ec2-user:ec2-user /opt/${ProjectName}
+          su - ec2-user -c "git clone --branch ${RepositoryBranch} ${RepositoryUrl} /opt/${ProjectName}"
+
+          # ── Certificado SSL para RDS ───────────────────────────────────
+          wget -O /opt/${ProjectName}/backend/global-bundle.pem \
+            https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
+          # ── Inicializar RDS ────────────────────────────────────────────
+          RDS_HOST="${RdsInstance.Endpoint.Address}"
+          RDS_ADMIN_PASS="${MysqlRootPassword}"
+          RDS_APP_USER="${MysqlUser}"
+          RDS_APP_PASS="${MysqlPassword}"
+          RDS_DB="${MysqlDatabase}"
+          INIT_SQL="/opt/${ProjectName}/backend/sql/init.sql"
+
+          echo ">>> Esperando a que RDS esté disponible..."
+          for i in $(seq 1 30); do
+            if mysql -h "$RDS_HOST" -P 3306 -u admin -p"$RDS_ADMIN_PASS" \
+                --connect-timeout=5 -e "SELECT 1;" 2>/dev/null; then
+              echo ">>> RDS disponible en el intento $i"
+              break
+            fi
+            echo ">>> RDS no disponible aún, intento $i/30. Esperando 20s..."
+            sleep 20
+          done
+
+          echo ">>> Creando usuario de aplicación..."
+          mysql -h "$RDS_HOST" -P 3306 -u admin -p"$RDS_ADMIN_PASS" <<SQL
+          CREATE USER IF NOT EXISTS '${!RDS_APP_USER}'@'%' IDENTIFIED BY '${!RDS_APP_PASS}';
+          GRANT ALL PRIVILEGES ON \`${!RDS_DB}\`.* TO '${!RDS_APP_USER}'@'%';
+          FLUSH PRIVILEGES;
+SQL
+
+          echo ">>> Importando schema desde init.sql..."
+          # Eliminar DEFINER incompatible con RDS y ejecutar
+          sed 's/DEFINER=[^*]*\*/\*/g; s/DEFINER=[^ ]* / /g' "$INIT_SQL" | \
+            mysql -h "$RDS_HOST" -P 3306 -u admin -p"$RDS_ADMIN_PASS" "$RDS_DB"
+          IMPORT_EXIT=$?
+
+          if [ $IMPORT_EXIT -eq 0 ]; then
+            echo ">>> Schema importado correctamente."
+          else
+            echo ">>> WARN: El import terminó con código $IMPORT_EXIT. Verificando tablas clave..."
+          fi
+
+          # Verificar que las tablas críticas existen
+          echo ">>> Verificando tablas..."
+          TABLES=$(mysql -h "$RDS_HOST" -P 3306 -u admin -p"$RDS_ADMIN_PASS" \
+            -D "$RDS_DB" -e "SHOW TABLES;" 2>/dev/null | wc -l)
+          echo ">>> Tablas encontradas: $TABLES"
+
+          if [ "$TABLES" -lt 5 ]; then
+            echo ">>> ERROR: Se esperaban al menos 5 tablas, solo se encontraron $TABLES."
+            echo ">>> Reintentando importación..."
+            sed 's/DEFINER=[^*]*\*/\*/g; s/DEFINER=[^ ]* / /g' "$INIT_SQL" | \
+              mysql -h "$RDS_HOST" -P 3306 -u admin -p"$RDS_ADMIN_PASS" "$RDS_DB" || true
+          fi
+
+          echo ">>> Inicialización de RDS completada."
+
+          # ── Archivo .env ───────────────────────────────────────────────
+          cat > /opt/${ProjectName}/.env <<EOF
+          BACKEND_DB_HOST=${RdsInstance.Endpoint.Address}
+          BACKEND_DB_USER=${MysqlUser}
+          BACKEND_DB_PASSWORD=${MysqlPassword}
+          BACKEND_DB_NAME=${MysqlDatabase}
+          BACKEND_DB_PORT=3306
+          BACKEND_PORT=${BackendPort}
+          FRONTEND_VITE_API_URL=http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)/api
+          EOF
+
+          chown ec2-user:ec2-user /opt/${ProjectName}/.env
+          chmod 600 /opt/${ProjectName}/.env
+
+          # ── Configuración Nginx (proxy inverso puerto 80) ──────────────
+          mkdir -p /opt/${ProjectName}/nginx
+
+          cat > /opt/${ProjectName}/nginx/nginx.conf <<'NGINXCONF'
+          events {
+            worker_connections 1024;
+          }
+
+          http {
+            include       /etc/nginx/mime.types;
+            default_type  application/octet-stream;
+
+            upstream backend {
+              server backend:3000;
+            }
+
+            upstream frontend {
+              server frontend:5173;
+            }
+
+            server {
+              listen 80;
+              server_name _;
+
+              # Peticiones /api/* -> backend Node.js
+              location /api/ {
+                proxy_pass http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_cache_bypass $http_upgrade;
+              }
+
+              # Health check del backend
+              location /health {
+                proxy_pass http://backend;
+                proxy_set_header Host $host;
+              }
+
+              # WebSocket de Vite (HMR)
+              location /ws {
+                proxy_pass http://frontend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+              }
+
+              # Todo lo demas -> frontend Vite
+              location / {
+                proxy_pass http://frontend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+              }
+            }
+          }
+          NGINXCONF
+
+          # ── docker-compose.yml sin MySQL, con Nginx en puerto 80 ───────
+          cat > /opt/${ProjectName}/docker-compose.yml <<'COMPOSEFILE'
+          services:
+            backend:
+              build: ./backend
+              container_name: backend
+              restart: always
+              env_file: .env
+              expose:
+                - "3000"
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+                interval: 15s
+                timeout: 5s
+                retries: 5
+              volumes:
+                - ./backend:/usr/src/app
+                - /usr/src/app/node_modules
+                - /var/run/docker.sock:/var/run/docker.sock:ro
+              command: ["node", "server.js"]
+
+            frontend:
+              build: ./frontend-web
+              container_name: frontend
+              restart: always
+              expose:
+                - "5173"
+              depends_on:
+                backend:
+                  condition: service_healthy
+              env_file: .env
+              environment:
+                - CHOKIDAR_USEPOLLING=true
+                - CHOKIDAR_INTERVAL=120
+              volumes:
+                - ./frontend-web/src:/usr/src/app/src
+                - ./frontend-web/index.html:/usr/src/app/index.html
+                - ./frontend-web/public:/usr/src/app/public
+                - ./frontend-web/postcss.config.js:/usr/src/app/postcss.config.js
+                - ./frontend-web/tailwind.config.js:/usr/src/app/tailwind.config.js
+                - ./frontend-web/vite.config.js:/usr/src/app/vite.config.js
+                - /usr/src/app/node_modules
+              command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+            nginx:
+              image: nginx:alpine
+              container_name: nginx
+              restart: always
+              ports:
+                - "80:80"
+              depends_on:
+                - frontend
+                - backend
+              volumes:
+                - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+          COMPOSEFILE
+
+          chown -R ec2-user:ec2-user /opt/${ProjectName}/nginx
+          chown ec2-user:ec2-user /opt/${ProjectName}/docker-compose.yml
+
+          # ── Levantar contenedores ──────────────────────────────────────
+          cd /opt/${ProjectName}
+          /usr/local/bin/docker-compose up -d --build
+
+Outputs:
+  InstancePublicIp:
+    Description: IP pública de la instancia EC2.
+    Value: !GetAtt AppInstance.PublicIp
+
+  FrontendUrl:
+    Description: URL del frontend (Vite).
+    Value: !Sub http://${AppInstance.PublicDnsName}
+
+  BackendHealthUrl:
+    Description: Health endpoint del backend.
+    Value: !Sub http://${AppInstance.PublicDnsName}:${BackendPort}/health
+
+  RdsEndpoint:
+    Description: Endpoint del RDS MySQL.
+    Value: !GetAtt RdsInstance.Endpoint.Address
+
+  SshCommand:
+    Description: Comando SSH para conectarte a la EC2 (usando la clave vockey).
+    Value: !Sub ssh -i ~/.ssh/labsuser.pem ec2-user@${AppInstance.PublicIp}
