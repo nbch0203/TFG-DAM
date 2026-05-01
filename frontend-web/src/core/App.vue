@@ -53,7 +53,7 @@ async function handleLogin() {
   error.value = ''
   try {
     // Construir URL del API usando el protocolo y host del navegador
-    const apiUrl = `${window.location.protocol}//${window.location.hostname}:3000/api`
+    const apiUrl = `${import.meta.env.VITE_API_URL}/api`
     console.log('Conectando a:', apiUrl)
     
     const response = await fetch(`${apiUrl}/login`, {

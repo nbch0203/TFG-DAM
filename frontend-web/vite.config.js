@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-
+import fs from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 // import vueDevTools from 'vite-plugin-vue-devtools'
@@ -23,17 +23,18 @@ export default defineConfig({
       interval: 120
     },
     hmr: {
-      host: 'localhost',
-      port: 5173,
-      clientPort: 5173
-    },
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path
-      }
-    }
+  host: 'schoolsafetrack.work.gd',
+  protocol: 'wss',
+  port: 443,
+  clientPort: 443
+},
+proxy: {
+  '/api': {
+    target: 'http://backend:3000',
+    changeOrigin: true,
+    secure: false,
+    rewrite: (path) => path
+  }
+}
   }
 })
