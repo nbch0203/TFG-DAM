@@ -396,7 +396,7 @@ CORTO PLAZO (Esta semana):
 MEDIANO PLAZO (Este mes):
 ├─ 📋 Decidir si mergear copilot/desarrollo a main
 ├─ 📋 Revisar ramas remotas sin uso local
-└─ 📋 Documentar proceso de branching para ustedes (tú y tu compañero)
+└─ 📋 Documentar proceso de branching para el equipo
 ```
 
 ---
