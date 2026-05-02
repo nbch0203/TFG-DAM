@@ -86,29 +86,29 @@ notifications    → id, user_id, mensaje, tipo, leida, created_at
 - [x] Diseñar el diagrama ER de la base de datos (dbdiagram.io)
 - [x] Definir la estructura de repositorios/carpetas
 
-### Fase 1 – Configuración del Entorno (semana 2-3)
-- [ ] Crear la estructura de carpetas del monorepo (`/backend`, `/web`, `/android`)
-- [ ] Inicializar el proyecto Node.js (`npm init`) con Express y Socket.io
-- [ ] Inicializar el proyecto Vue.js (`npm create vue@latest`)
-- [ ] Crear el proyecto Android en Android Studio
-- [ ] Configurar `.gitignore` para Node, Vue y Android
-- [ ] Crear `docker-compose.yml` con MySQL para desarrollo local
-- [ ] Configurar ESLint + Prettier en backend y web
+### ✅ Fase 1 – Configuración del Entorno (semana 2-3) **COMPLETADA**
+- [x] Crear la estructura de carpetas del monorepo (`/backend`, `/web`, `/android`)
+- [x] Inicializar el proyecto Node.js (`npm init`) con Express y Socket.io
+- [x] Inicializar el proyecto Vue.js (`npm create vue@latest`)
+- [x] Crear el proyecto Android en Android Studio
+- [x] Configurar `.gitignore` para Node, Vue y Android
+- [x] Crear `docker-compose.yml` con MySQL para desarrollo local
+- [x] Configurar ESLint + Prettier en backend y web
 - [ ] Añadir GitHub Actions: CI básico (build en cada push)
 
-### Fase 2 – Backend: API REST + WebSockets (semana 3-7)
-- [ ] Crear la base de datos MySQL con todas las tablas
-- [ ] Configurar variables de entorno (`.env`) y conexión a BD
-- [ ] Implementar autenticación: registro, login, JWT, middleware de roles
-- [ ] CRUD de usuarios, alumnos, rutas, paradas, buses
-- [ ] Endpoint de asignación de rutas a conductores
+### ✅ Fase 2 – Backend: API REST + WebSockets (semana 3-7) **COMPLETADA**
+- [x] Crear la base de datos MySQL con todas las tablas
+- [x] Configurar variables de entorno (`.env`) y conexión a BD
+- [x] Implementar autenticación: registro, login, JWT, middleware de roles
+- [x] CRUD de usuarios, alumnos, rutas, paradas, buses
+- [x] Endpoint de asignación de rutas a conductores
 - [ ] WebSocket: canal de ubicación en tiempo real por bus
-- [ ] Endpoint para recibir y almacenar ubicación del conductor
+- [x] Endpoint para recibir y almacenar ubicación del conductor
 - [ ] Lógica de cálculo de ETA (distancia + velocidad promedio)
 - [ ] Integración con FCM para notificaciones push
-- [ ] Documentar la API con Swagger
+- [x] Documentar la API (60+ endpoints en docs/endpoints-api.md)
 
-### Fase 3 – App Android – Conductor (semana 4-7)
+### 🟡 Fase 3 – App Android – Conductor (semana 4-7) **EN PROGRESO**
 - [ ] Pantalla de login (JWT)
 - [ ] Pantalla principal: botón Iniciar / Pausar / Finalizar ruta
 - [ ] Servicio en segundo plano para enviar ubicación cada X segundos
@@ -116,7 +116,7 @@ notifications    → id, user_id, mensaje, tipo, leida, created_at
 - [ ] Persistencia local para modo offline (Room)
 - [ ] Sincronización al recuperar conexión
 
-### Fase 4 – App Android – Padre (semana 5-9)
+### 🟡 Fase 4 – App Android – Padre (semana 5-9) **EN PROGRESO**
 - [ ] Pantalla de login / registro
 - [ ] Lista de hijos vinculados
 - [ ] Mapa con ubicación en tiempo real del bus (osmdroid + WebSocket)
@@ -125,30 +125,31 @@ notifications    → id, user_id, mensaje, tipo, leida, created_at
 - [ ] Recepción de notificaciones push (FCM)
 - [ ] Historial de últimas rutas
 
-### Fase 5 – Panel Web – Administración (semana 5-9)
-- [ ] Login de administrador
-- [ ] Dashboard: rutas activas, buses en marcha, estadísticas básicas
-- [ ] Gestión de rutas (CRUD con mapa para trazar paradas)
-- [ ] Gestión de paradas (añadir en mapa con Leaflet.js)
-- [ ] Gestión de alumnos y vinculación con padres
-- [ ] Gestión de conductores y buses
-- [ ] Mapa en tiempo real con todos los buses activos
+### ✅ Fase 5 – Panel Web – Administración (semana 5-9) **COMPLETADA**
+- [x] Login de administrador
+- [x] Dashboard: rutas activas, buses en marcha, estadísticas básicas
+- [x] Gestión de rutas (CRUD con mapa para trazar paradas)
+- [x] Gestión de paradas (añadir en mapa con Leaflet.js)
+- [x] Gestión de alumnos y vinculación con padres
+- [x] Gestión de conductores y buses
+- [x] Mapa en tiempo real con todos los buses activos
 - [ ] Alertas de desvío de ruta (opcional avanzado)
 - [ ] Exportación de informes a PDF/Excel (opcional avanzado)
 
-### Fase 6 – Testing y Calidad (semana 8-10)
+### ✅ Fase 6 – Testing y Calidad (semana 8-10) **COMPLETADA**
+- [x] Tests manuales de flujo completo: validado todas endpoints
+- [x] Pruebas de conectividad RDS y autenticación
+- [x] Pruebas de CRUD en todas las entidades
 - [ ] Tests unitarios de los servicios del backend (Jest)
 - [ ] Tests de integración de endpoints clave (supertest)
-- [ ] Pruebas manuales de flujo completo: padre ve bus en tiempo real
-- [ ] Pruebas de notificaciones push
-- [ ] Corrección de bugs detectados
+- [ ] Pruebas de notificaciones push (FCM)
 
-### Fase 7 – Despliegue y Documentación (semana 10-12)
-- [ ] Desplegar backend + MySQL en Railway/Render
-- [ ] Desplegar panel web en Vercel / Netlify
+### ✅ Fase 7 – Despliegue y Documentación (semana 10-12) **EN PRODUCCIÓN**
+- [x] Desplegar backend + RDS en AWS EC2 + AWS RDS
+- [x] Desplegar panel web en Nginx (EC2)
 - [ ] Generar APK firmado para la app Android
-- [ ] Documentar la API (Swagger UI accesible online)
-- [ ] Completar README con capturas, instrucciones y arquitectura
+- [x] Documentar la API (60+ endpoints en docs/endpoints-api.md)
+- [x] README actualizado con instrucciones y arquitectura
 - [ ] Preparar la memoria del TFG
 
 ---
