@@ -73,7 +73,7 @@ Fase 7 - Despliegue y Documentación       ✅ COMPLETADA
 3. Implementar WebSockets para tiempo real (opcional)
 4. Integrar FCM para notificaciones push
 
-### Para DevOps
+### Para Despliegue / Operaciones
 1. Configurar GitHub Actions CI/CD
 2. Hacer backups automáticos de RDS
 3. Monitorear logs y métricas
@@ -168,5 +168,5 @@ docker-compose logs nginx | tail -50
 ---
 
 **Última actualización:** 2 de Mayo de 2026  
-**Responsable:** Equipo de Desarrollo  
+**Responsable:** Tú y tu compañero  
 **Estado:** ✅ OPERATIVO Y DOCUMENTADO

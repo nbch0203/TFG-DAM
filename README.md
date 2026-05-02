@@ -24,7 +24,7 @@ Plataforma integral para el seguimiento en tiempo real del transporte escolar, o
 |-------|-------------|
 | 👨‍👩‍👦 **Padres** | Ven la ubicación del bus de su hijo en tiempo real y reciben notificaciones push |
 | 🚍 **Conductores** | Usan una app móvil para iniciar/finalizar rutas y enviar su posición automáticamente |
-| 🏫 **Administración** | Gestionan rutas, paradas, alumnos y conductores desde un panel web con mapas en vivo |
+| 🏫 **Administración** | Gestiona rutas, paradas, alumnos y conductores desde un panel web con mapas en vivo |
 
 ---
 
@@ -80,7 +80,7 @@ docker compose logs -f
 
 ### Documentación Detallada
 
-1. **Empezar aquí:** [DOCUMENTACION_ACTUALIZADA.md](DOCUMENTACION_ACTUALIZADA.md) (guía por rol)
+1. **Empezar aquí:** [DOCUMENTACION_ACTUALIZADA.md](DOCUMENTACION_ACTUALIZADA.md) (guía práctica)
 2. **Ver endpoints:** [docs/endpoints-api.md](docs/endpoints-api.md) (referencia API)
 3. **Arquitectura:** [APPLICATION_STATUS.md](APPLICATION_STATUS.md) (diagrama y flujos)
 4. **Ramas Git:** [GIT_STRUCTURE.md](GIT_STRUCTURE.md) (estado de ramas)
