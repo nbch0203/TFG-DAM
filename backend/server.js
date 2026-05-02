@@ -67,6 +67,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Evitar que el navegador cachee respuestas de la API y devuelva 304 sin cuerpo.
+// Esto previene que componentes que usan `response.json()` reciban cuerpo vacío.
+app.use((req, res, next) => {
+  try {
+    if (String(req.path || '').startsWith('/api')) {
+      res.set('Cache-Control', 'no-store');
+    }
+  } catch (err) {
+    // no-op
+  }
+  next();
+});
+
 const execAsync = util.promisify(exec);
 
 // Conexión a base de datos 

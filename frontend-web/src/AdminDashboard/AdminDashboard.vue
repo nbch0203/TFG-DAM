@@ -50,14 +50,31 @@ const routes = ref(0)
 async function cargarEstadisticas() {
   try {
     const apiUrl = getApiUrl()
-    
+    const fetchAndLog = async (path) => {
+      try {
+        const res = await fetch(`${apiUrl}/${path}`)
+        const text = await res.text().catch(() => null)
+        try {
+          const data = text ? JSON.parse(text) : []
+          console.log(`[debug] ${path} status=${res.status}`, data)
+          return data
+        } catch (err) {
+          console.log(`[debug] ${path} parse error`, text)
+          return []
+        }
+      } catch (err) {
+        console.error(`[debug] ${path} fetch error`, err)
+        return []
+      }
+    }
+
     const [busesRes, usersRes, studentsRes, routesRes] = await Promise.all([
-      fetch(`${apiUrl}/buses`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/users`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/students`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/routes`).then(r => r.json()).catch(() => [])
+      fetchAndLog('buses'),
+      fetchAndLog('users'),
+      fetchAndLog('students'),
+      fetchAndLog('routes')
     ])
-    
+
     buses.value = (busesRes || []).length
     users.value = (usersRes || []).length
     students.value = (studentsRes || []).length

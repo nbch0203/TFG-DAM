@@ -20,7 +20,7 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     command: ["node", "server.js"]
 
   frontend:
@@ -28,7 +28,7 @@ services:
     container_name: frontend
     restart: always
     environment:
-      - VITE_API_URL=https://schoolsafetrack.work.gd
+      - VITE_API_URL=/api
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=120
     expose:
@@ -48,6 +48,7 @@ services:
     container_name: nginx
     restart: always
     ports:
+      - "80:80"
       - "443:443"
     depends_on:
       - frontend

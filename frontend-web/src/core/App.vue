@@ -37,6 +37,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { getApiUrl } from '../utils/api.js'
 import AdminPage from '../AdminPage/AdminPage.vue'
 import ProfesorPage from '../ProfesorPage/ProfesorPage.vue'
 import ParentPage from '../ParentPage/ParentPage.vue'
@@ -52,8 +53,8 @@ const username = ref('')
 async function handleLogin() {
   error.value = ''
   try {
-    // Construir URL del API usando el protocolo y host del navegador
-    const apiUrl = `${import.meta.env.VITE_API_URL}/api`
+    // Obtener URL base del API de forma segura
+    const apiUrl = getApiUrl()
     console.log('Conectando a:', apiUrl)
     
     const response = await fetch(`${apiUrl}/login`, {

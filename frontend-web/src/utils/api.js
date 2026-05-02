@@ -4,5 +4,11 @@
  * regardless of whether it's running in Docker or locally
  */
 export function getApiUrl() { 
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000'
+  const env = import.meta.env.VITE_API_URL
+  if (env && String(env).trim() !== '') {
+    return String(env).replace(/\/+$/, '')
+  }
+  // Por defecto usar ruta relativa `/api` para que el frontend haga
+  // peticiones al mismo origen y NGINX pueda proxyarlas al backend.
+  return '/api'
 }
