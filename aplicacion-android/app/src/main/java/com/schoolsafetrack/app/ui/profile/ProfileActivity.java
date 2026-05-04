@@ -1,7 +1,6 @@
 package com.schoolsafetrack.app.ui.profile;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -11,6 +10,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.content.SharedPreferences;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -39,6 +42,8 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Apply previously selected theme mode before inflating views
+        applySavedThemeMode();
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -67,6 +72,70 @@ public class ProfileActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.profile_title);
         }
         binding.toolbar.setNavigationOnClickListener(v -> finish());
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_profile, menu);
+        // Update icon according to current theme mode
+        MenuItem item = menu.findItem(R.id.action_theme_toggle);
+        if (item != null) {
+            String mode = getSharedPreferences(PREFS_THEME, MODE_PRIVATE)
+                    .getString(PREF_KEY_MODE, "light");
+            if ("dark".equals(mode)) {
+                item.setIcon(R.drawable.ic_moon);
+            } else {
+                item.setIcon(R.drawable.ic_sun);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_theme_toggle) {
+            cycleThemeMode();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private static final String PREFS_THEME = "app_theme_prefs";
+    private static final String PREF_KEY_MODE = "theme_mode"; // values: "auto","light","dark"
+
+    private void applySavedThemeMode() {
+        String mode = getSharedPreferences(PREFS_THEME, MODE_PRIVATE).getString(PREF_KEY_MODE, "auto");
+        switch (mode) {
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
+    }
+
+    private void cycleThemeMode() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_THEME, MODE_PRIVATE);
+        String current = prefs.getString(PREF_KEY_MODE, "light");
+        String next;
+        int toastRes;
+        if ("dark".equals(current)) {
+            next = "light";
+            toastRes = R.string.theme_light;
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else {
+            next = "dark";
+            toastRes = R.string.theme_dark;
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        prefs.edit().putString(PREF_KEY_MODE, next).apply();
+        Toast.makeText(this, toastRes, Toast.LENGTH_SHORT).show();
+        // Recreate activity to apply theme change immediately to this screen
+        recreate();
     }
 
     private void observeViewModel() {
