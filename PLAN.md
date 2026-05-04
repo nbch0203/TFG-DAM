@@ -1,6 +1,6 @@
 # 📋 Plan de Desarrollo – SchoolSafeTrack (TFG-DAM)
 
-> Documento de planificación elaborado con GitHub Copilot para el Trabajo de Fin de Grado de DAM (2.º año).
+> Documento de planificación para el Trabajo de Fin de Grado de DAM (2.º año).
 
 ---
 
