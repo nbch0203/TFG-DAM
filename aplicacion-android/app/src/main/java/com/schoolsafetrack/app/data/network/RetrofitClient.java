@@ -7,9 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    // URL por defecto: 10.0.2.2 sólo funciona en el emulador Android.
-    // En dispositivo físico hay que usar la IP real del PC en la red local.
-    public static final String DEFAULT_BASE_URL = "http://10.0.2.2:3000/api/";
+    // URL por defecto para producción: backend publicado detrás de Nginx.
+    public static final String DEFAULT_BASE_URL = "https://schoolsafetrack.work.gd/api/";
 
     private static String currentBaseUrl = DEFAULT_BASE_URL;
     private static RetrofitClient instance;

@@ -18,7 +18,7 @@ public class SessionManager {
     private static final String KEY_LOGGED_IN = "logged_in";
     private static final String KEY_SERVER_URL = "server_url";
 
-    private static final String DEFAULT_SERVER_URL = "http://10.0.2.2:3000/api/";
+    private static final String DEFAULT_SERVER_URL = "https://schoolsafetrack.work.gd/api/";
 
     private final SharedPreferences prefs;
 
