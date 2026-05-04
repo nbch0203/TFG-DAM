@@ -1,11 +1,14 @@
 package com.schoolsafetrack.app.ui.profile;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -14,15 +17,21 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.model.UserProfile;
+import com.schoolsafetrack.app.data.repository.ProfileImageUtils;
+import com.schoolsafetrack.app.data.repository.ProfilePhotoStore;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityProfileBinding;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
+
+import java.io.File;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private ActivityProfileBinding binding;
     private ProfileViewModel viewModel;
     private SessionManager session;
+    private ProfilePhotoStore photoStore;
+    private ActivityResultLauncher<String[]> photoPickerLauncher;
 
     // Keeps the last loaded profile to pre-fill edit dialogs
     private UserProfile currentProfile;
@@ -34,9 +43,11 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         session = new SessionManager(this);
+        photoStore = new ProfilePhotoStore(this);
         viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         setupToolbar();
+        setupPhotoPicker();
         observeViewModel();
         setupButtons();
 
@@ -103,6 +114,7 @@ public class ProfileActivity extends AppCompatActivity {
             initial = String.valueOf(profile.getEmail().charAt(0)).toUpperCase();
         }
         binding.tvAvatarInitial.setText(initial);
+        applyAvatarPhoto(photoStore.getUserPhoto(profile.getId()), initial);
         binding.tvFullName.setText(profile.getFullName());
 
         binding.tvNombreValue.setText(profile.getNombre() != null ? profile.getNombre() : "");
@@ -111,6 +123,8 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
+        binding.flAvatarContainer.setOnClickListener(v -> openAvatarPicker());
+
         binding.ibEditNombre.setOnClickListener(v -> {
             String current = currentProfile != null && currentProfile.getNombre() != null
                     ? currentProfile.getNombre() : "";
@@ -161,6 +175,44 @@ public class ProfileActivity extends AppCompatActivity {
 
         binding.btnChangePassword.setOnClickListener(v -> showPasswordDialog());
         binding.btnLogout.setOnClickListener(v -> confirmLogout());
+    }
+
+    private void setupPhotoPicker() {
+        photoPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(),
+                uri -> {
+                    if (uri == null || currentProfile == null) return;
+
+                    File saved = photoStore.saveUserPhoto(currentProfile.getId(), uri);
+                    if (saved != null) {
+                        String initial = currentProfile.getNombre() != null && !currentProfile.getNombre().isEmpty()
+                                ? String.valueOf(currentProfile.getNombre().charAt(0)).toUpperCase()
+                                : (currentProfile.getEmail() != null && !currentProfile.getEmail().isEmpty()
+                                    ? String.valueOf(currentProfile.getEmail().charAt(0)).toUpperCase()
+                                    : "?");
+                        applyAvatarPhoto(saved, initial);
+                        Toast.makeText(this, R.string.profile_photo_saved, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, R.string.action_error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void openAvatarPicker() {
+        if (photoPickerLauncher == null) return;
+        photoPickerLauncher.launch(new String[]{"image/*"});
+    }
+
+    private void applyAvatarPhoto(File photoFile, String fallbackInitial) {
+        if (photoFile != null && ProfileImageUtils.loadIntoImageView(this, photoFile, binding.ivAvatarPhoto)) {
+            binding.ivAvatarPhoto.setVisibility(View.VISIBLE);
+            binding.tvAvatarInitial.setVisibility(View.GONE);
+        } else {
+            binding.ivAvatarPhoto.setImageDrawable(null);
+            binding.ivAvatarPhoto.setVisibility(View.GONE);
+            binding.tvAvatarInitial.setVisibility(View.VISIBLE);
+            binding.tvAvatarInitial.setText(fallbackInitial);
+        }
     }
 
     /** Shows a single-field edit dialog and calls onSave with the trimmed new value. */

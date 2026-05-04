@@ -95,6 +95,7 @@
     <string name="profile_confirm_password">Confirmar nueva contraseña</string>
     <string name="profile_update_password">Actualizar contraseña</string>
     <string name="profile_saved_ok">Datos guardados correctamente</string>
+    <string name="profile_photo_saved">Foto de perfil actualizada</string>
     <string name="profile_email_required">El email es obligatorio</string>
     <string name="profile_password_required">La contraseña es obligatoria</string>
     <string name="profile_password_min_length">La contraseña debe tener al menos 6 caracteres</string>

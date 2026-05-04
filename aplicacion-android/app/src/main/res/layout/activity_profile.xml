@@ -38,6 +38,7 @@
 
                 <!-- Círculo avatar con inicial -->
                 <FrameLayout
+                    android:id="@+id/flAvatarContainer"
                     android:layout_width="80dp"
                     android:layout_height="80dp">
 
@@ -46,6 +47,14 @@
                         android:layout_height="80dp"
                         android:background="@drawable/bg_avatar_circle"
                         android:alpha="0.25" />
+
+                    <ImageView
+                        android:id="@+id/ivAvatarPhoto"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        android:contentDescription="@null" />
 
                     <TextView
                         android:id="@+id/tvAvatarInitial"

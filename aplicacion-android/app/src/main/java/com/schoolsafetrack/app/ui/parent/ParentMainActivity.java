@@ -2,6 +2,7 @@ package com.schoolsafetrack.app.ui.parent;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +24,8 @@ import com.google.android.material.tabs.TabLayout;
 import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.model.Bus;
 import com.schoolsafetrack.app.data.model.Child;
+import com.schoolsafetrack.app.data.repository.ProfileImageUtils;
+import com.schoolsafetrack.app.data.repository.ProfilePhotoStore;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityParentMainBinding;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
@@ -30,10 +34,12 @@ import com.schoolsafetrack.app.ui.profile.ProfileViewModel;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +53,9 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private ParentViewModel viewModel;
     private ProfileViewModel profileViewModel;
     private SessionManager session;
+    private ProfilePhotoStore photoStore;
     private ChildrenAdapter childrenAdapter;
+    private ImageView ivToolbarAvatarPhoto;
     private TextView tvToolbarAvatar;
     private TextView tvToolbarUserName;
 
@@ -57,6 +65,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private boolean pollingActive = false;
     private boolean hasCenteredOnBus = false;
     private boolean suppressSpinnerCallback = false;
+    private boolean forceCenterOnNextUpdate = false;
 
     // Child-follow: child id that is currently selected (null = show all)
     private Long followedChildId = null;
@@ -74,6 +83,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         setContentView(binding.getRoot());
 
         session = new SessionManager(this);
+        photoStore = new ProfilePhotoStore(this);
         viewModel = new ViewModelProvider(this).get(ParentViewModel.class);
         profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
@@ -97,8 +107,17 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         }
 
         // Manual refresh button still works alongside auto-refresh
-        binding.btnRefreshMap.setOnClickListener(v ->
-                viewModel.loadBuses(session.getUserId()));
+        binding.btnRefreshMap.setOnClickListener(v -> {
+            // When user presses manual refresh, reload buses and if following a specific child
+            // force the map to recenter on that bus when the new data arrives. If in "show all"
+            // mode (followedChildId == null) do not change the current map center.
+            if (followedChildId != null) {
+                forceCenterOnNextUpdate = true;
+                // reset hasCenteredOnBus so we guarantee recenter even if previously centered
+                hasCenteredOnBus = false;
+            }
+            viewModel.loadBuses(session.getUserId());
+        });
     }
 
     private void setupTabs() {
@@ -144,7 +163,19 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setBuiltInZoomControls(true);
+        // Initial zoom
         map.getController().setZoom(12.0);
+        // Prevent excessive zooming out (evita repetición de mosaicos al alejar mucho)
+        // Ajusta estos valores según convenga: minZoom = lejania máxima (más pequeño -> más alejado)
+        try {
+            map.setMinZoomLevel(5.0);
+            map.setMaxZoomLevel(20.0);
+        } catch (NoSuchMethodError e) {
+            // Algunas versiones antiguas de osmdroid no exponen setMin/MaxZoomLevel; en ese caso
+            // no hacemos nada y confiamos en setZoom inicial.
+        } catch (Throwable ignored) {
+            // Otros errores inesperados: ignorar para no romper la app en dispositivos
+        }
     }
 
      private void setupChildSpinner() {
@@ -269,7 +300,9 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                 return;
             }
             if (tvToolbarAvatar != null) tvToolbarAvatar.setText(initial);
+            updateToolbarAvatarPhoto(profile.getId(), initial);
             if (tvToolbarUserName != null) tvToolbarUserName.setText(name);
+            invalidateOptionsMenu();
         });
     }
 
@@ -319,6 +352,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         Drawable busIcon = ContextCompat.getDrawable(this, R.drawable.ic_bus_marker);
 
         Marker firstMarker = null;
+        Double minLat = null, maxLat = null, minLon = null, maxLon = null;
         for (Bus bus : visibleBuses) {
             if (bus.getLat() == null || bus.getLon() == null) continue;
 
@@ -335,13 +369,48 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             }
             map.getOverlays().add(marker);
             if (firstMarker == null) firstMarker = marker;
+            // Accumulate bounds
+            if (minLat == null) {
+                minLat = bus.getLat(); maxLat = bus.getLat(); minLon = bus.getLon(); maxLon = bus.getLon();
+            } else {
+                if (bus.getLat() < minLat) minLat = bus.getLat();
+                if (bus.getLat() > maxLat) maxLat = bus.getLat();
+                if (bus.getLon() < minLon) minLon = bus.getLon();
+                if (bus.getLon() > maxLon) maxLon = bus.getLon();
+            }
+        }
+        // Establecer límite de scroll para que el usuario no pueda desplazar el mapa
+        // fuera de la zona donde hay buses (con un pequeño margen).
+        try {
+            if (minLat != null && maxLat != null && minLon != null && maxLon != null) {
+                double paddingLat = (maxLat - minLat) * 0.25 + 0.001; // 25% padding
+                double paddingLon = (maxLon - minLon) * 0.25 + 0.001;
+                double north = Math.min(90.0, maxLat + paddingLat);
+                double south = Math.max(-90.0, minLat - paddingLat);
+                double east = Math.min(180.0, maxLon + paddingLon);
+                double west = Math.max(-180.0, minLon - paddingLon);
+                BoundingBox limit = new BoundingBox(north, east, south, west);
+                // Intentar usar el método disponible para establecer el límite de desplazamiento
+                try {
+                    map.setScrollableAreaLimitDouble(limit);
+                } catch (NoSuchMethodError e) {
+                    // Si no existe setScrollableAreaLimitDouble en esta versión de osmdroid,
+                    // no intentamos otra variante para evitar errores de compilación.
+                }
+            }
+        } catch (Throwable ignored) {
+            // Ignorar si el método no está disponible o hay algún error inesperado
         }
 
-        // Solo centra automáticamente cuando se sigue a un hijo concreto.
-        if (followedBusId != null && firstMarker != null && !hasCenteredOnBus) {
+        // Centrar automáticamente cuando se sigue a un hijo concreto. Si el usuario ha
+        // forzado una recarga manual (forceCenterOnNextUpdate) o aún no se ha centrado,
+        // entonces animamos la cámara hacia el bus seguido. No centramos si estamos en
+        // el modo "— Todos —" (followedBusId == null).
+        if (followedBusId != null && firstMarker != null && (!hasCenteredOnBus || forceCenterOnNextUpdate)) {
             map.getController().animateTo(firstMarker.getPosition());
             map.getController().setZoom(15.0);
             hasCenteredOnBus = true;
+            forceCenterOnNextUpdate = false;
         }
 
         map.invalidate();
@@ -361,24 +430,34 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        MenuItem profileItem = menu.findItem(R.id.action_profile);
-        if (profileItem != null) {
-            View actionView = profileItem.getActionView();
-            if (actionView != null) {
-                tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
-                tvToolbarUserName = actionView.findViewById(R.id.tvToolbarUserName);
-                String email = session.getEmail();
-                if (tvToolbarAvatar != null && !email.isEmpty()) {
-                    tvToolbarAvatar.setText(String.valueOf(email.charAt(0)).toUpperCase());
-                }
-                if (tvToolbarUserName != null && !email.isEmpty()) {
-                    tvToolbarUserName.setText(email);
-                }
-                actionView.setOnClickListener(v ->
-                        startActivity(new Intent(this, ProfileActivity.class)));
-            }
-        }
+        bindToolbarAvatar(menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        bindToolbarAvatar(menu);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void bindToolbarAvatar(Menu menu) {
+        MenuItem profileItem = menu.findItem(R.id.action_profile);
+        if (profileItem == null) return;
+
+        View actionView = profileItem.getActionView();
+        if (actionView == null) return;
+
+        ivToolbarAvatarPhoto = actionView.findViewById(R.id.ivToolbarAvatarPhoto);
+        tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
+        tvToolbarUserName = actionView.findViewById(R.id.tvToolbarUserName);
+
+        String email = session.getEmail();
+        String fallbackInitial = !email.isEmpty() ? String.valueOf(email.charAt(0)).toUpperCase() : "?";
+        if (tvToolbarAvatar != null) tvToolbarAvatar.setText(fallbackInitial);
+        if (tvToolbarUserName != null && !email.isEmpty()) tvToolbarUserName.setText(email);
+        updateToolbarAvatarPhoto(session.getUserId(), fallbackInitial);
+
+        actionView.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void logout() {
@@ -389,11 +468,28 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         finish();
     }
 
+    private void updateToolbarAvatarPhoto(long userId, String fallbackInitial) {
+        if (ivToolbarAvatarPhoto == null) return;
+        File photoFile = photoStore.getUserPhoto(userId);
+        if (photoFile != null && ProfileImageUtils.loadIntoImageView(this, photoFile, ivToolbarAvatarPhoto)) {
+            ivToolbarAvatarPhoto.setVisibility(View.VISIBLE);
+            if (tvToolbarAvatar != null) tvToolbarAvatar.setVisibility(View.GONE);
+        } else {
+            ivToolbarAvatarPhoto.setImageDrawable(null);
+            ivToolbarAvatarPhoto.setVisibility(View.GONE);
+            if (tvToolbarAvatar != null) {
+                tvToolbarAvatar.setVisibility(View.VISIBLE);
+                tvToolbarAvatar.setText(fallbackInitial);
+            }
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         binding.mapView.onResume();
         profileViewModel.loadProfile(session.getUserId());
+        invalidateOptionsMenu();
         // Resume polling only if map tab is visible
         if (binding.layoutMap.getVisibility() == View.VISIBLE) {
             startPolling();

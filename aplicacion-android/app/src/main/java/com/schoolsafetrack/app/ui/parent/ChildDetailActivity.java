@@ -1,27 +1,32 @@
 package com.schoolsafetrack.app.ui.parent;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.model.Child;
+import com.schoolsafetrack.app.data.repository.ProfileImageUtils;
+import com.schoolsafetrack.app.data.repository.ProfilePhotoStore;
 import com.schoolsafetrack.app.data.repository.SessionManager;
 import com.schoolsafetrack.app.databinding.ActivityChildDetailBinding;
+
+import java.io.File;
 
 /**
  * Pantalla de detalle de un alumno:
  * – Información personal (nombre, fecha nacimiento, curso, colegio)
  * – Parada asignada
  * – Lista de incidencias registradas en su trayecto
- *
- * Recibe el objeto {@link Child} serializado en el Intent con la clave
- * {@link #EXTRA_CHILD_ID} y {@link #EXTRA_CHILD_NOMBRE}.
  */
 public class ChildDetailActivity extends AppCompatActivity {
 
@@ -39,6 +44,9 @@ public class ChildDetailActivity extends AppCompatActivity {
     private ChildDetailViewModel viewModel;
     private IncidentsAdapter incidentsAdapter;
     private SessionManager session;
+    private ProfilePhotoStore photoStore;
+    private ActivityResultLauncher<String[]> photoPickerLauncher;
+    private long childId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +55,13 @@ public class ChildDetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         session = new SessionManager(this);
+        photoStore = new ProfilePhotoStore(this);
         viewModel = new ViewModelProvider(this).get(ChildDetailViewModel.class);
 
+        setupPhotoPicker();
+
         // Recuperar datos del Intent
-        long childId = getIntent().getLongExtra(EXTRA_CHILD_ID, -1);
+        childId = getIntent().getLongExtra(EXTRA_CHILD_ID, -1);
         String nombre = getIntent().getStringExtra(EXTRA_CHILD_NOMBRE);
         String apellidos = getIntent().getStringExtra(EXTRA_CHILD_APELLIDOS);
         String curso = getIntent().getStringExtra(EXTRA_CHILD_CURSO);
@@ -91,6 +102,7 @@ public class ChildDetailActivity extends AppCompatActivity {
                 : "?";
         binding.tvHeaderAvatar.setText(initial);
         binding.tvHeaderAvatar.setBackground(makeAvatarBg(avatarColor));
+        applyAvatarPhoto(photoStore.getChildPhoto(childId), initial);
         binding.tvHeaderName.setText(fullName);
         binding.tvHeaderCurso.setText(curso != null ? curso : getString(R.string.not_available));
 
@@ -103,6 +115,43 @@ public class ChildDetailActivity extends AppCompatActivity {
         // Parada
         binding.tvStopName.setText(stopNombre != null ? stopNombre : getString(R.string.stop_not_assigned));
         binding.tvStopAddress.setText(stopDir != null ? stopDir : getString(R.string.not_available));
+
+        binding.flHeaderAvatar.setOnClickListener(v -> openAvatarPicker());
+    }
+
+    private void setupPhotoPicker() {
+        photoPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(),
+                uri -> {
+                    if (uri == null || childId <= 0) return;
+                    File saved = photoStore.saveChildPhoto(childId, uri);
+                    if (saved != null) {
+                        String initial = binding.tvHeaderAvatar.getText() != null
+                                ? binding.tvHeaderAvatar.getText().toString()
+                                : "?";
+                        applyAvatarPhoto(saved, initial);
+                        Toast.makeText(this, R.string.profile_photo_saved, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, R.string.action_error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void openAvatarPicker() {
+        if (photoPickerLauncher == null) return;
+        photoPickerLauncher.launch(new String[]{"image/*"});
+    }
+
+    private void applyAvatarPhoto(File photoFile, String fallbackInitial) {
+        if (photoFile != null && ProfileImageUtils.loadIntoImageView(this, photoFile, binding.ivHeaderAvatarPhoto)) {
+            binding.ivHeaderAvatarPhoto.setVisibility(View.VISIBLE);
+            binding.tvHeaderAvatar.setVisibility(View.GONE);
+        } else {
+            binding.ivHeaderAvatarPhoto.setImageDrawable(null);
+            binding.ivHeaderAvatarPhoto.setVisibility(View.GONE);
+            binding.tvHeaderAvatar.setVisibility(View.VISIBLE);
+            binding.tvHeaderAvatar.setText(fallbackInitial);
+        }
     }
 
     private android.graphics.drawable.GradientDrawable makeAvatarBg(int color) {
