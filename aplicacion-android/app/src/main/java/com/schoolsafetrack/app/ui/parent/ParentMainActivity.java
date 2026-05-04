@@ -147,37 +147,40 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         map.getController().setZoom(12.0);
     }
 
-    /** Build the "Seguir hijo" spinner with the latest children list. */
-    private void setupChildSpinner() {
-        // Initial empty adapter; populated once children are loaded
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, new ArrayList<>());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerFollowChild.setAdapter(adapter);
+     private void setupChildSpinner() {
+         // Initial empty adapter; populated once children are loaded
+         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                 android.R.layout.simple_spinner_item, new ArrayList<>());
+         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+         binding.spinnerFollowChild.setAdapter(adapter);
 
-        binding.spinnerFollowChild.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (suppressSpinnerCallback) return;
-                if (position == 0) {
-                    // "— Todos —" selected
-                    followedChildId = null;
-                } else {
-                    Child selected = latestChildren.get(position - 1);
-                    followedChildId = selected.getId();
-                }
-                hasCenteredOnBus = false;
-                // Re-render map immediately with current data
-                List<Bus> currentBuses = viewModel.getBuses().getValue();
-                if (currentBuses != null) updateMapWithBuses(currentBuses);
-            }
+         binding.spinnerFollowChild.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+             @Override
+             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                 if (suppressSpinnerCallback) return;
+                 
+                 if (position == 0) {
+                     // "— Todos —" selected
+                     followedChildId = null;
+                 } else if (position > 0 && position - 1 < latestChildren.size()) {
+                     Child selected = latestChildren.get(position - 1);
+                     followedChildId = Long.valueOf(selected.getId());
+                 } else {
+                     followedChildId = null;
+                 }
+                 
+                 hasCenteredOnBus = false;
+                 // Re-render map immediately with current data
+                 List<Bus> currentBuses = viewModel.getBuses().getValue();
+                 if (currentBuses != null) updateMapWithBuses(currentBuses);
+             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                followedChildId = null;
-            }
-        });
-    }
+             @Override
+             public void onNothingSelected(AdapterView<?> parent) {
+                 followedChildId = null;
+             }
+         });
+     }
 
     /** Rebuild spinner entries whenever the children list changes. */
     private void refreshChildSpinner(List<Child> children) {
@@ -298,9 +301,17 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         // Filter to followed bus if a child is selected
         Long followedBusId = getFollowedBusId();
         List<Bus> visibleBuses = new ArrayList<>();
-        for (Bus bus : buses) {
-            if (followedBusId == null || followedBusId == bus.getId()) {
-                visibleBuses.add(bus);
+        
+        if (followedBusId == null) {
+            // Show all buses
+            visibleBuses.addAll(buses);
+        } else {
+            // Show only the bus of the followed child
+            for (Bus bus : buses) {
+                if (bus.getId() == followedBusId.longValue()) {
+                    visibleBuses.add(bus);
+                    break;
+                }
             }
         }
 
@@ -312,7 +323,6 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
             if (bus.getLat() == null || bus.getLon() == null) continue;
 
             GeoPoint pos = new GeoPoint(bus.getLat(), bus.getLon());
-            // Reuse existing marker if present, otherwise create new one
             Marker marker = new Marker(map);
             marker.setPosition(pos);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
@@ -340,8 +350,9 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private Long getFollowedBusId() {
         if (followedChildId == null) return null;
         for (Child child : latestChildren) {
-            if (child.getId() == followedChildId) {
-                return child.getBusId();
+            if (child.getId() == followedChildId.longValue()) {
+                Long busId = child.getBusId();
+                return (busId != null && busId > 0) ? busId : null;
             }
         }
         return null;
