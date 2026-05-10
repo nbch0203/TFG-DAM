@@ -3,44 +3,52 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Paleta principal -->
-    <color name="primary_blue">#FF2D7BD8</color>
-    <color name="primary_blue_dark">#FF1A4D87</color>
-    <color name="primary_blue_light">#FF4B95F5</color>
-    <color name="accent_orange">#FFFF8A3D</color>
-    <color name="accent_orange_light">#FFFFB067</color>
+    <!-- Paleta Corporativa Oficial (Night Mode) -->
+    <color name="azul_principal">#FF1E3A8A</color>
+    <color name="azul_secundario">#FF3B82F6</color>
+    <color name="verde_exito">#FF22C55E</color>
+    <color name="amarillo">#FFFBBF24</color>
+    <color name="gris_oscuro">#FF1F2937</color>
+    <color name="gris_claro">#FFF3F4F6</color>
+
+    <!-- Paleta principal (night mode) -->
+    <color name="primary_blue">#FF3B82F6</color>
+    <color name="primary_blue_dark">#FF1E3A8A</color>
+    <color name="primary_blue_light">#FF60A5FA</color>
+    <color name="accent_orange">#FFFBBF24</color>
+    <color name="accent_orange_light">#FFFCD34D</color>
 
     <!-- Fondos -->
-    <color name="background_light">#FF121417</color>
-    <color name="surface_white">#FF1B1F24</color>
+    <color name="background_light">#FF111827</color>
+    <color name="surface_white">#FF1F2937</color>
 
     <!-- Texto -->
-    <color name="text_primary">#FFECEFF4</color>
-    <color name="text_secondary">#FFB2BCC8</color>
+    <color name="text_primary">#FFF3F4F6</color>
+    <color name="text_secondary">#FFD1D5DB</color>
     <color name="text_on_primary">#FFFFFFFF</color>
 
     <!-- Estados -->
     <color name="error_red">#FFFF6B6B</color>
-    <color name="status_active">#FF5BC078</color>
-    <color name="status_maintenance">#FFFFB74D</color>
-    <color name="status_pending">#FF7DB9FF</color>
-    <color name="status_finished">#FF9AA4B2</color>
+    <color name="status_active">#FF22C55E</color>
+    <color name="status_maintenance">#FFFBBF24</color>
+    <color name="status_pending">#FF3B82F6</color>
+    <color name="status_finished">#FF9CA3AF</color>
 
     <!-- Incidencias por tipo -->
-    <color name="incident_retraso">#FFFFB74D</color>
+    <color name="incident_retraso">#FFFBBF24</color>
     <color name="incident_mecanico">#FFFF6B6B</color>
     <color name="incident_accidente">#FFFF8A80</color>
-    <color name="incident_clima">#FF7DB9FF</color>
-    <color name="incident_otro">#FF9AA4B2</color>
+    <color name="incident_clima">#FF3B82F6</color>
+    <color name="incident_otro">#FF9CA3AF</color>
 
     <!-- Avatares -->
-    <color name="avatar_1">#FF4B95F5</color>
-    <color name="avatar_2">#FF5BC078</color>
-    <color name="avatar_3">#FFFFB74D</color>
-    <color name="avatar_4">#FFB388FF</color>
-    <color name="avatar_5">#FFFF8A80</color>
-    <color name="avatar_6">#FF4DD0E1</color>
+    <color name="avatar_1">#FF3B82F6</color>
+    <color name="avatar_2">#FF22C55E</color>
+    <color name="avatar_3">#FFFBBF24</color>
+    <color name="avatar_4">#FFA78BFA</color>
+    <color name="avatar_5">#FFF87171</color>
+    <color name="avatar_6">#FF06B6D4</color>
 
     <!-- Divisores -->
-    <color name="divider">#FF2E3540</color>
+    <color name="divider">#FF374151</color>
 </resources>

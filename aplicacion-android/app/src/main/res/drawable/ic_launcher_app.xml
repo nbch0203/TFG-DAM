@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Fondo azul oscuro con esquinas redondeadas -->
+    <path
+        android:pathData="M 50 50 Q 0 0 0 100 L 0 412 Q 0 512 100 512 L 412 512 Q 512 512 512 412 L 512 100 Q 512 0 412 0 L 100 0 Q 50 0 50 50 Z"
+        android:fillColor="#1E3A8A" />
+
+    <!-- Cuerpo principal del bus -->
+    <path
+        android:pathData="M 120 200 L 400 200 Q 420 200 420 220 L 420 340 Q 420 360 400 360 L 120 360 Q 100 360 100 340 L 100 220 Q 100 200 120 200 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Ventana principal -->
+    <path
+        android:pathData="M 150 140 L 330 140 Q 345 140 345 155 L 345 215 Q 345 230 330 230 L 150 230 Q 135 230 135 215 L 135 155 Q 135 140 150 140 Z"
+        android:fillColor="#1E3A8A" />
+
+    <!-- Persona 1 (cabeza - azul) -->
+    <circle
+        android:cx="200"
+        android:cy="170"
+        android:r="18"
+        android:fillColor="#3B82F6" />
+
+    <!-- Persona 1 (cuerpo - azul) -->
+    <circle
+        android:cx="200"
+        android:cy="210"
+        android:r="12"
+        android:fillColor="#3B82F6" />
+
+    <!-- Persona 2 (cabeza - verde) -->
+    <circle
+        android:cx="290"
+        android:cy="185"
+        android:r="16"
+        android:fillColor="#22C55E" />
+
+    <!-- Persona 2 (cuerpo - verde) -->
+    <circle
+        android:cx="290"
+        android:cy="215"
+        android:r="10"
+        android:fillColor="#22C55E" />
+
+    <!-- Línea 1 horizontal -->
+    <line
+        android:startX="150"
+        android:startY="290"
+        android:endX="350"
+        android:endY="290"
+        android:stroke="#1E3A8A"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <!-- Línea 2 horizontal -->
+    <line
+        android:startX="150"
+        android:startY="320"
+        android:endX="350"
+        android:endY="320"
+        android:stroke="#1E3A8A"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <!-- Rueda izquierda (círculo exterior) -->
+    <circle
+        android:cx="170"
+        android:cy="375"
+        android:r="25"
+        android:fillColor="#1E3A8A" />
+
+    <!-- Rueda izquierda (círculo interior) -->
+    <circle
+        android:cx="170"
+        android:cy="375"
+        android:r="16"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Rueda derecha (círculo exterior) -->
+    <circle
+        android:cx="330"
+        android:cy="375"
+        android:r="25"
+        android:fillColor="#1E3A8A" />
+
+    <!-- Rueda derecha (círculo interior) -->
+    <circle
+        android:cx="330"
+        android:cy="375"
+        android:r="16"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Asa lateral izquierda -->
+    <path
+        android:pathData="M 110 220 L 135 220 Q 145 220 145 230 L 145 310 Q 145 320 135 320 L 110 320 Q 100 320 100 310 L 100 230 Q 100 220 110 220 Z"
+        android:fillColor="#FFFFFF"
+        android:stroke="#1E3A8A"
+        android:strokeWidth="3" />
+
+    <!-- Asa lateral derecha -->
+    <path
+        android:pathData="M 380 220 L 405 220 Q 415 220 415 230 L 415 310 Q 415 320 405 320 L 380 320 Q 370 320 370 310 L 370 230 Q 370 220 380 220 Z"
+        android:fillColor="#FFFFFF"
+        android:stroke="#1E3A8A"
+        android:strokeWidth="3" />
+
+    <!-- Puerta delantera -->
+    <path
+        android:pathData="M 130 260 L 180 260 Q 188 260 188 268 L 188 340 Q 188 348 180 348 L 130 348 Q 122 348 122 340 L 122 268 Q 122 260 130 260 Z"
+        android:fillColor="#1E3A8A" />
+
+    <!-- Pin de ubicación - círculo verde exterior -->
+    <circle
+        android:cx="390"
+        android:cy="120"
+        android:r="55"
+        android:fillColor="#22C55E"
+        android:stroke="#FFFFFF"
+        android:strokeWidth="4" />
+
+    <!-- Pin de ubicación - círculo blanco interior -->
+    <circle
+        android:cx="390"
+        android:cy="120"
+        android:r="24"
+        android:fillColor="#FFFFFF" />
+
+</vector>

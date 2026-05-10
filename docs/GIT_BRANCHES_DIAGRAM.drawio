@@ -1,212 +1,166 @@
-<mxfile host="Electron" modified="2026-05-02T16:48:00.000Z" agent="5.0 (X11; Linux x86_64)" etag="git" version="20.8.0" type="device">
-  <diagram id="git-branches" name="Git Structure">
-    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" background="#ffffff" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        
-        <!-- TITULO PRINCIPAL -->
-        <mxCell id="titulo" value="GIT REPOSITORY STRUCTURE - TFG-DAM" style="fontSize=20;fontStyle=1;align=center;fillColor=#1976d2;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="20" width="1400" height="40" as="geometry" />
-        </mxCell>
-        
-        <!-- COLUMNA 1: LOCAL BRANCHES -->
-        <mxCell id="local-header" value="LOCAL BRANCHES" style="fontSize=14;fontStyle=1;align=center;fillColor=#4CAF50;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="80" width="280" height="30" as="geometry" />
-        </mxCell>
-        
-        <!-- Main Local -->
-        <mxCell id="main-local" value="HEAD: main&#10;Commit: 14168e3&#10;Status: SYNC" style="fontSize=11;align=center;fillColor=#A5D6A7;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="100" y="130" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- Ajustes Local -->
-        <mxCell id="ajustes-local" value="ajustes-app-movil&#10;Commit: 14168e3&#10;Status: MERGED" style="fontSize=11;align=center;fillColor=#81D4FA;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="100" y="240" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- Copilot Local -->
-        <mxCell id="copilot-local" value="copilot/desarrollo...&#10;Commit: 27095b6&#10;Status: BEHIND 1" style="fontSize=11;align=center;fillColor=#F48FB1;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="100" y="350" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- COLUMNA 2: COMMITS & STATUS -->
-        <mxCell id="commits-header" value="COMMITS INFO" style="fontSize=14;fontStyle=1;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="450" y="80" width="280" height="30" as="geometry" />
-        </mxCell>
-        
-        <!-- Commit 14168e3 Info -->
-        <mxCell id="commit-14168e3" value="14168e3: Fix API RDS&#10;Author: Fix API&#10;Date: 2026-05-02&#10;Status: Main + Ajustes" style="fontSize=10;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="450" y="130" width="280" height="100" as="geometry" />
-        </mxCell>
-        
-        <!-- Commit 27095b6 Info -->
-        <mxCell id="commit-27095b6" value="27095b6: Desarrollo&#10;Features: Tracking&#10;Paradas, Alumnos&#10;Status: Atras 1" style="fontSize=10;align=center;fillColor=#CE93D8;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="450" y="350" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- Commit ce66376 Info -->
-        <mxCell id="commit-ce66376" value="ce66376: CloudFormation&#10;Infraestructura AWS&#10;Status: Adelantada" style="fontSize=10;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="450" y="240" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- COLUMNA 3: REMOTE BRANCHES -->
-        <mxCell id="remote-header" value="REMOTE BRANCHES" style="fontSize=14;fontStyle=1;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="800" y="80" width="280" height="30" as="geometry" />
-        </mxCell>
-        
-        <!-- Main Remote -->
-        <mxCell id="main-remote" value="origin/main&#10;Commit: 14168e3&#10;Status: SYNC OK" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="800" y="130" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- Ajustes Remote -->
-        <mxCell id="ajustes-remote" value="origin/ajustes-app&#10;Commit: 14168e3&#10;Status: MERGED" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="800" y="240" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- Copilot Remote -->
-        <mxCell id="copilot-remote" value="origin/copilot/...&#10;Commit: ce66376&#10;Status: AHEAD" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="800" y="350" width="280" height="90" as="geometry" />
-        </mxCell>
-        
-        <!-- FLECHAS DE SYNC -->
-        <mxCell id="sync-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="380" y="175" as="sourcePoint" />
-            <mxPoint x="800" y="175" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        
-        <mxCell id="sync-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="380" y="285" as="sourcePoint" />
-            <mxPoint x="800" y="285" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        
-        <mxCell id="sync-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#FF5722;strokeWidth=2;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="380" y="395" as="sourcePoint" />
-            <mxPoint x="800" y="395" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        
-        <!-- ESTADO SUMMARY -->
-        <mxCell id="summary-bg" value="" style="fillColor=#E8EAF6;rounded=1;strokeColor=#3F51B5;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="1150" y="130" width="350" height="310" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="summary-title" value="STATUS SUMMARY" style="fontSize=12;fontStyle=1;align=center;fillColor=#3F51B5;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="1160" y="140" width="330" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="summary-content" value="MAIN: Sync OK&#10;- Ready for production&#10;- Latest fixes merged&#10;&#10;AJUSTES: Merged&#10;- Can be deleted&#10;- No longer needed&#10;&#10;COPILOT: Behind 1&#10;- Needs git merge main&#10;- Features available&#10;&#10;OTHERS: 2 remote only&#10;- No local copies" style="fontSize=9;align=left;fillColor=#C5CAE9;rounded=1;whiteSpace=wrap;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1160" y="170" width="330" height="260" as="geometry" />
-        </mxCell>
-        
-        <!-- ACCIONES SECTION -->
-        <mxCell id="actions-bg" value="" style="fillColor=#FFF3E0;rounded=1;strokeColor=#E65100;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="100" y="480" width="1400" height="220" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="actions-title" value="RECOMMENDED ACTIONS" style="fontSize=13;fontStyle=1;align=center;fillColor=#E65100;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="110" y="490" width="1380" height="25" as="geometry" />
-        </mxCell>
-        
-        <!-- Action 1 -->
-        <mxCell id="action1-box" value="" style="fillColor=#E0F2F1;rounded=1;strokeColor=#00796B;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="120" y="530" width="310" height="160" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action1-title" value="1. USE MAIN" style="fontSize=11;fontStyle=1;align=center;fillColor=#00796B;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="130" y="540" width="290" height="20" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action1-text" value="Production ready&#10;Latest API fixes&#10;Synced with GitHub&#10;Use for deployment" style="fontSize=9;align=center;fillColor=#B2DFDB;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="130" y="565" width="290" height="120" as="geometry" />
-        </mxCell>
-        
-        <!-- Action 2 -->
-        <mxCell id="action2-box" value="" style="fillColor=#E3F2FD;rounded=1;strokeColor=#1565C0;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="450" y="530" width="310" height="160" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action2-title" value="2. DELETE AJUSTES" style="fontSize=11;fontStyle=1;align=center;fillColor=#1565C0;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="460" y="540" width="290" height="20" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action2-text" value="Branch merged to main&#10;No longer needed&#10;Command:&#10;git branch -d&#10;ajustes-app-movil" style="fontSize=9;align=center;fillColor=#BBDEFB;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="460" y="565" width="290" height="120" as="geometry" />
-        </mxCell>
-        
-        <!-- Action 3 -->
-        <mxCell id="action3-box" value="" style="fillColor=#FFF3E0;rounded=1;strokeColor=#E65100;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="780" y="530" width="310" height="160" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action3-title" value="3. UPDATE COPILOT" style="fontSize=11;fontStyle=1;align=center;fillColor=#E65100;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="790" y="540" width="290" height="20" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action3-text" value="Behind 1 commit&#10;Contains features&#10;Commands:&#10;git merge main&#10;git push origin" style="fontSize=9;align=center;fillColor=#FFE0B2;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="790" y="565" width="290" height="120" as="geometry" />
-        </mxCell>
-        
-        <!-- Action 4 -->
-        <mxCell id="action4-box" value="" style="fillColor=#F3E5F5;rounded=1;strokeColor=#6A1B9A;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1110" y="530" width="310" height="160" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action4-title" value="4. TRACK REMOTES" style="fontSize=11;fontStyle=1;align=center;fillColor=#6A1B9A;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="540" width="290" height="20" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="action4-text" value="For remote-only branches&#10;Create local copy:&#10;git checkout --track&#10;origin/BRANCH_NAME&#10;Start working" style="fontSize=9;align=center;fillColor=#E1BEE7;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="565" width="290" height="120" as="geometry" />
-        </mxCell>
-        
-        <!-- LEGEND -->
-        <mxCell id="legend-bg" value="" style="fillColor=#F5F5F5;rounded=1;strokeColor=#999999;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="720" width="1400" height="80" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-title" value="LEGEND" style="fontSize=11;fontStyle=1;align=left;fillColor=none;rounded=1;spacing=10;" vertex="1" parent="1">
-          <mxGeometry x="120" y="730" width="100" height="20" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-sync" value="SYNC = Synchronized" style="fontSize=9;align=center;fillColor=#2196F3;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="130" y="755" width="130" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-merged" value="MERGED = Integrated to main" style="fontSize=9;align=center;fillColor=#8BC34A;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="290" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-behind" value="BEHIND = Needs update" style="fontSize=9;align=center;fillColor=#FF5722;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="470" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-ahead" value="AHEAD = More commits" style="fontSize=9;align=center;fillColor=#FFC107;fontColor=#000000;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="650" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-line" value="Straight = Synced" style="fontSize=9;align=center;fillColor=#2196F3;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="830" y="755" width="130" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-dash" value="Dashed = Out of sync" style="fontSize=9;align=center;fillColor=#FF5722;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="990" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-local" value="Green = Local branch" style="fontSize=9;align=center;fillColor=#4CAF50;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="1170" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-        
-        <mxCell id="legend-remote" value="Orange = Remote branch" style="fontSize=9;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="1350" y="755" width="150" height="25" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram id="git-branches" name="Git Structure">
+        <mxGraphModel dx="1714" dy="768" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="titulo" value="GIT REPOSITORY STRUCTURE - TFG-DAM" style="fontSize=20;fontStyle=1;align=center;fillColor=#1976d2;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="20" width="1400" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="local-header" value="LOCAL BRANCHES" style="fontSize=14;fontStyle=1;align=center;fillColor=#4CAF50;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="80" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="main-local" value="HEAD: main&#xa;Commit: 14168e3&#xa;Status: SYNC" style="fontSize=11;align=center;fillColor=#A5D6A7;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="130" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ajustes-local" value="ajustes-app-movil&#xa;Commit: 14168e3&#xa;Status: MERGED" style="fontSize=11;align=center;fillColor=#81D4FA;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="240" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="copilot-local" value="copilot/desarrollo...&#xa;Commit: 27095b6&#xa;Status: BEHIND 1" style="fontSize=11;align=center;fillColor=#F48FB1;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="350" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="commits-header" value="COMMITS INFO" style="fontSize=14;fontStyle=1;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="80" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="commit-14168e3" value="14168e3: Fix API RDS&#xa;Author: Fix API&#xa;Date: 2026-05-02&#xa;Status: Main + Ajustes" style="fontSize=10;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="120" width="280" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="commit-27095b6" value="27095b6: Desarrollo&#xa;Features: Tracking&#xa;Paradas, Alumnos&#xa;Status: Atras 1" style="fontSize=10;align=center;fillColor=#CE93D8;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="350" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="commit-ce66376" value="ce66376: CloudFormation&#xa;Infraestructura AWS&#xa;Status: Adelantada" style="fontSize=10;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="240" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="remote-header" value="REMOTE BRANCHES" style="fontSize=14;fontStyle=1;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="80" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="main-remote" value="origin/main&#xa;Commit: 14168e3&#xa;Status: SYNC OK" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="125" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="ajustes-remote" value="origin/ajustes-app&#xa;Commit: 14168e3&#xa;Status: MERGED" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="240" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="copilot-remote" value="origin/copilot/...&#xa;Commit: ce66376&#xa;Status: AHEAD" style="fontSize=11;align=center;fillColor=#FFD54F;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="350" width="280" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="sync-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="380" y="175" as="sourcePoint"/>
+                        <mxPoint x="800" y="175" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="420" y="175"/>
+                            <mxPoint x="420" y="230"/>
+                            <mxPoint x="760" y="230"/>
+                            <mxPoint x="760" y="175"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="sync-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="380" y="285" as="sourcePoint"/>
+                        <mxPoint x="800" y="285" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="420" y="285"/>
+                            <mxPoint x="420" y="340"/>
+                            <mxPoint x="760" y="340"/>
+                            <mxPoint x="760" y="285"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="sync-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#FF5722;strokeWidth=2;dashed=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="380" y="395" as="sourcePoint"/>
+                        <mxPoint x="800" y="395" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="420" y="395"/>
+                            <mxPoint x="420" y="460"/>
+                            <mxPoint x="760" y="460"/>
+                            <mxPoint x="760" y="395"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="summary-bg" value="" style="fillColor=#E8EAF6;rounded=1;strokeColor=#3F51B5;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1150" y="130" width="350" height="310" as="geometry"/>
+                </mxCell>
+                <mxCell id="summary-title" value="STATUS SUMMARY" style="fontSize=12;fontStyle=1;align=center;fillColor=#3F51B5;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="140" width="330" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="summary-content" value="MAIN: Sync OK&#xa;- Ready for production&#xa;- Latest fixes merged&#xa;&#xa;AJUSTES: Merged&#xa;- Can be deleted&#xa;- No longer needed&#xa;&#xa;COPILOT: Behind 1&#xa;- Needs git merge main&#xa;- Features available&#xa;&#xa;OTHERS: 2 remote only&#xa;- No local copies" style="fontSize=9;align=left;fillColor=#C5CAE9;rounded=1;whiteSpace=wrap;spacing=5;" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="170" width="330" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="actions-bg" value="" style="fillColor=#FFF3E0;rounded=1;strokeColor=#E65100;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="480" width="1400" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="actions-title" value="RECOMMENDED ACTIONS" style="fontSize=13;fontStyle=1;align=center;fillColor=#E65100;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="110" y="490" width="1380" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="action1-box" value="" style="fillColor=#E0F2F1;rounded=1;strokeColor=#00796B;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="530" width="310" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="action1-title" value="1. USE MAIN" style="fontSize=11;fontStyle=1;align=center;fillColor=#00796B;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="540" width="290" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="action1-text" value="Production ready&#xa;Latest API fixes&#xa;Synced with GitHub&#xa;Use for deployment" style="fontSize=9;align=center;fillColor=#B2DFDB;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="565" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="action2-box" value="" style="fillColor=#E3F2FD;rounded=1;strokeColor=#1565C0;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="530" width="310" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="action2-title" value="2. DELETE AJUSTES" style="fontSize=11;fontStyle=1;align=center;fillColor=#1565C0;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="540" width="290" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="action2-text" value="Branch merged to main&#xa;No longer needed&#xa;Command:&#xa;git branch -d&#xa;ajustes-app-movil" style="fontSize=9;align=center;fillColor=#BBDEFB;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="565" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="action3-box" value="" style="fillColor=#FFF3E0;rounded=1;strokeColor=#E65100;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="530" width="310" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="action3-title" value="3. UPDATE COPILOT" style="fontSize=11;fontStyle=1;align=center;fillColor=#E65100;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="540" width="290" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="action3-text" value="Behind 1 commit&#xa;Contains features&#xa;Commands:&#xa;git merge main&#xa;git push origin" style="fontSize=9;align=center;fillColor=#FFE0B2;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="565" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="action4-box" value="" style="fillColor=#F3E5F5;rounded=1;strokeColor=#6A1B9A;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="1110" y="530" width="310" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="action4-title" value="4. TRACK REMOTES" style="fontSize=11;fontStyle=1;align=center;fillColor=#6A1B9A;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="540" width="290" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="action4-text" value="For remote-only branches&#xa;Create local copy:&#xa;git checkout --track&#xa;origin/BRANCH_NAME&#xa;Start working" style="fontSize=9;align=center;fillColor=#E1BEE7;rounded=1;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="565" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-bg" value="" style="fillColor=#F5F5F5;rounded=1;strokeColor=#999999;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="720" width="1400" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="LEGEND" style="fontSize=11;fontStyle=1;align=left;fillColor=none;rounded=1;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="730" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-sync" value="SYNC = Synchronized" style="fontSize=9;align=center;fillColor=#2196F3;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="755" width="130" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-merged" value="MERGED = Integrated to main" style="fontSize=9;align=center;fillColor=#8BC34A;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-behind" value="BEHIND = Needs update" style="fontSize=9;align=center;fillColor=#FF5722;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="470" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-ahead" value="AHEAD = More commits" style="fontSize=9;align=center;fillColor=#FFC107;fontColor=#000000;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-line" value="Straight = Synced" style="fontSize=9;align=center;fillColor=#2196F3;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="830" y="755" width="130" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-dash" value="Dashed = Out of sync" style="fontSize=9;align=center;fillColor=#FF5722;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-local" value="Green = Local branch" style="fontSize=9;align=center;fillColor=#4CAF50;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-remote" value="Orange = Remote branch" style="fontSize=9;align=center;fillColor=#FF9800;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1350" y="755" width="150" height="25" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>
