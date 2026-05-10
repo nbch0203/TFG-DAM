@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@color/primary_blue"
-            app:tabTextColor="#A0CEFF"
+            app:tabTextColor="#A6FFFFFF"
             app:tabSelectedTextColor="@color/white"
             app:tabIndicatorColor="@color/white"
             app:tabIndicatorHeight="3dp"
@@ -51,8 +51,8 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
-                android:background="@color/surface_white"
-                android:elevation="1dp">
+                    android:background="@drawable/bg_surface_section"
+                    android:elevation="0dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -142,9 +142,9 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
-                android:background="@color/surface_white"
+                    android:background="@drawable/bg_surface_section"
                 android:gravity="center_vertical">
-
+                    android:elevation="0dp">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -164,7 +164,8 @@
                 android:id="@+id/map_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:background="@drawable/bg_surface_section" />
         </LinearLayout>
 
     </FrameLayout>

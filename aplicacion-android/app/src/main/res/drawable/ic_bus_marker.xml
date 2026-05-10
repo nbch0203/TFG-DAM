@@ -9,7 +9,7 @@
     <!-- Fondo circular azul -->
     <path
         android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0"
-        android:fillColor="#1565C0"/>
+        android:fillColor="@color/primary_blue"/>
 
     <!-- Cuerpo del autobús (blanco) -->
     <path
@@ -19,26 +19,26 @@
     <!-- Ventanas (azul oscuro) -->
     <path
         android:pathData="M13,15 L22,15 L22,22 L13,22 Z"
-        android:fillColor="#1565C0"
+        android:fillColor="@color/azul_secundario"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="0.5"/>
     <path
         android:pathData="M25,15 L35,15 L35,22 L25,22 Z"
-        android:fillColor="#1565C0"
+        android:fillColor="@color/azul_secundario"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="0.5"/>
 
     <!-- Franja naranja en la parte inferior -->
     <path
         android:pathData="M10,28 L38,28 L38,31 L10,31 Z"
-        android:fillColor="#FF6D00"/>
+        android:fillColor="@color/amarillo"/>
 
     <!-- Ruedas (gris oscuro) -->
     <path
         android:pathData="M17,35m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
-        android:fillColor="#424242"/>
+        android:fillColor="@color/gris_oscuro"/>
     <path
         android:pathData="M31,35m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
-        android:fillColor="#424242"/>
+        android:fillColor="@color/gris_oscuro"/>
 
 </vector>

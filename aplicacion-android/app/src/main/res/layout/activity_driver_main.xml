@@ -60,22 +60,22 @@
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="4dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="18dp"
                 app:cardBackgroundColor="@color/primary_blue">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginBottom="12dp">
 
                         <TextView
                             android:id="@+id/tv_route_name"
@@ -109,21 +109,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="4dp">
+                        android:layout_marginBottom="6dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🚌  "
-                            android:textSize="13sp"
-                            android:textColor="#D0E4FF" />
+                            android:text="@string/route_bus_label"
+                            android:textSize="14sp"
+                            android:textColor="#D9FFFFFF" />
 
                         <TextView
                             android:id="@+id/tv_bus_info"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textSize="13sp"
-                            android:textColor="#D0E4FF" />
+                            android:textSize="14sp"
+                            android:textColor="#D9FFFFFF" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -134,16 +134,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🕐  "
-                            android:textSize="13sp"
-                            android:textColor="#D0E4FF" />
+                            android:text="@string/route_time_label"
+                            android:textSize="14sp"
+                            android:textColor="#D9FFFFFF" />
 
                         <TextView
                             android:id="@+id/tv_horario"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textSize="13sp"
-                            android:textColor="#D0E4FF" />
+                            android:textSize="14sp"
+                            android:textColor="#D9FFFFFF" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -160,22 +160,22 @@
                     android:id="@+id/btn_report_incident"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="@string/report_incident"
                     android:layout_marginEnd="8dp"
                     android:textSize="12sp"
-                    app:cornerRadius="10dp"
+                    app:cornerRadius="14dp"
                     android:enabled="false" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_finish_route"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="@string/finish_route"
                     android:textSize="12sp"
-                    app:cornerRadius="10dp"
+                    app:cornerRadius="14dp"
                     app:backgroundTint="@color/status_active"
                     android:enabled="false" />
             </LinearLayout>
