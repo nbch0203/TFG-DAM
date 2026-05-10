@@ -36,3 +36,5 @@ aplicacion-android/*.apk
 .pem
 #Plan de desarrollo
 PLAN.md
+
+.pem

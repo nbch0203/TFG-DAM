@@ -17,6 +17,7 @@ import android.widget.CheckBox;
 import android.widget.Toast;
 
 import android.widget.TextView;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -38,6 +39,8 @@ import com.schoolsafetrack.app.ui.login.LoginActivity;
 
 import com.schoolsafetrack.app.ui.profile.ProfileActivity;
 import com.schoolsafetrack.app.ui.profile.ProfileViewModel;
+import com.schoolsafetrack.app.data.repository.ProfilePhotoStore;
+import com.schoolsafetrack.app.data.repository.ProfileImageUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -68,6 +71,7 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
     private SessionManager session;
     private StopsAdapter stopsAdapter;
     private TextView tvToolbarAvatar;
+    private ImageView ivToolbarAvatarPhoto;
     private TextView tvToolbarUserName;
 
     private RouteInfo currentRoute;
@@ -184,6 +188,24 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
             }
             if (tvToolbarAvatar != null) tvToolbarAvatar.setText(initial);
             if (tvToolbarUserName != null) tvToolbarUserName.setText(name);
+
+            // Try to load toolbar photo from internal store. If image is available show it,
+            // otherwise keep the initial letter. If menu hasn't been created yet, ask to
+            // recreate it so toolbar view is bound in onCreateOptionsMenu.
+            try {
+                ProfilePhotoStore store = new ProfilePhotoStore(this);
+                java.io.File photo = store.getUserPhoto(profile.getId());
+                if (photo != null && ivToolbarAvatarPhoto != null
+                        && ProfileImageUtils.loadIntoImageView(this, photo, ivToolbarAvatarPhoto)) {
+                    ivToolbarAvatarPhoto.setVisibility(View.VISIBLE);
+                    if (tvToolbarAvatar != null) tvToolbarAvatar.setVisibility(View.GONE);
+                } else {
+                    if (ivToolbarAvatarPhoto != null) ivToolbarAvatarPhoto.setVisibility(View.GONE);
+                    if (tvToolbarAvatar != null) tvToolbarAvatar.setVisibility(View.VISIBLE);
+                }
+            } catch (Exception ignored) {
+                // ignore and keep initials
+            }
         });
     }
 
@@ -440,6 +462,7 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
             View actionView = profileItem.getActionView();
             if (actionView != null) {
                 tvToolbarAvatar = actionView.findViewById(R.id.tvToolbarAvatarInitial);
+                ivToolbarAvatarPhoto = actionView.findViewById(R.id.ivToolbarAvatarPhoto);
                 tvToolbarUserName = actionView.findViewById(R.id.tvToolbarUserName);
                 String email = session.getEmail();
                 if (tvToolbarAvatar != null && !email.isEmpty()) {
@@ -448,11 +471,35 @@ public class DriverMainActivity extends AppCompatActivity implements StopsAdapte
                 if (tvToolbarUserName != null && !email.isEmpty()) {
                     tvToolbarUserName.setText(email);
                 }
+
+                // Attempt to load saved profile photo for the driver and show it in toolbar
+                try {
+                    ProfilePhotoStore store = new ProfilePhotoStore(this);
+                    java.io.File photo = store.getUserPhoto(session.getUserId());
+                    if (photo != null && ivToolbarAvatarPhoto != null
+                            && ProfileImageUtils.loadIntoImageView(this, photo, ivToolbarAvatarPhoto)) {
+                        ivToolbarAvatarPhoto.setVisibility(View.VISIBLE);
+                        if (tvToolbarAvatar != null) tvToolbarAvatar.setVisibility(View.GONE);
+                    } else {
+                        if (ivToolbarAvatarPhoto != null) ivToolbarAvatarPhoto.setVisibility(View.GONE);
+                        if (tvToolbarAvatar != null) tvToolbarAvatar.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception ignored) {
+                    // keep initials
+                }
+
                 actionView.setOnClickListener(v ->
                         startActivity(new Intent(this, ProfileActivity.class)));
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Ensure toolbar action view is refreshed after returning from profile editor
+        invalidateOptionsMenu();
     }
 
     private void logout() {

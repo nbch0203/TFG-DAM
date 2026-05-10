@@ -1,51 +1,64 @@
 # 🚍 SchoolSafeTrack – TFG-DAM
 
-SchoolSafeTrack es una plataforma de transporte escolar que permite seguir autobuses en tiempo real, coordinar rutas y controlar el servicio por perfiles de usuario. El objetivo es dar tranquilidad a las familias, facilitar el trabajo de la administración y ayudar al conductor a registrar la ruta con menos errores. La información se organiza para que cualquier persona pueda entender el proyecto sin conocer su base técnica.
+**Sistema de Transporte Escolar Seguro**
 
-> 📋 Si quieres ver la planificación completa, consulta [PLAN.md](./PLAN.md).
+Plataforma integral para el seguimiento en tiempo real del transporte escolar, orientada a garantizar la seguridad de los alumnos y la tranquilidad de las familias.
 
-## Qué resuelve
+> 📋 Consulta el archivo [PLAN.md](./PLAN.md) para ver la planificación completa del proyecto.
 
-El proyecto resuelve un problema muy concreto: saber dónde está el autobús escolar, qué ruta está haciendo y cómo se relaciona esa información con los alumnos y las paradas. Así, los padres pueden seguir el trayecto, el conductor puede enviar su ubicación y la administración puede gestionar la operación desde un panel web.
+---
 
-## Funcionalidades principales
+## 🎯 ¿Qué es SchoolSafeTrack?
 
-| Perfil | Para qué sirve |
-|---|---|
-| 👨‍👩‍👦 Padres | Ver el autobús asociado a sus hijos en un mapa y recibir avisos del trayecto. |
-| 🚍 Conductores | Iniciar y terminar rutas, y enviar la ubicación del autobús de forma automática. |
-| 🏫 Administración | Gestionar colegios, rutas, paradas, alumnos, autobuses y usuarios desde el panel web. |
-| 👩‍🏫 Profesorado | Consultar información de apoyo relacionada con el flujo del proyecto. |
+| Quién | Qué obtiene |
+|-------|-------------|
+| 👨‍👩‍👦 **Padres** | Ven la ubicación del bus de su hijo en tiempo real y reciben notificaciones push |
+| 🚍 **Conductores** | Usan una app móvil para iniciar/finalizar rutas y enviar su posición automáticamente |
+| 🏫 **Administración** | Gestionan rutas, paradas, alumnos y conductores desde un panel web con mapas en vivo |
 
-## Cómo está hecho, a grandes rasgos
+---
 
-- **App Android**: usada por el conductor para registrar la ruta y compartir la ubicación.
-- **Frontend web**: panel de administración y vista para familias.
-- **Backend**: API que recibe peticiones, aplica reglas de acceso y conecta con la base de datos.
-- **Base de datos MySQL**: guarda usuarios, rutas, paradas, alumnos, mensajes y ubicaciones.
-- **Mapa en vivo**: muestra el autobús sobre el mapa usando datos del backend.
+## 🧰 Stack Tecnológico
 
-## Cómo se usa o se ejecuta
+| Capa | Tecnología |
+|------|-----------|
+| 📱 App móvil | Java (Android) |
+# SchoolSafeTrack
 
-1. Inicia los servicios con Docker:
+Sistema de transporte escolar para seguimiento en tiempo real, gestión de rutas y control por roles.
+
+## Resumen General
+
+SchoolSafeTrack organiza el transporte escolar en torno a cuatro perfiles:
+- Administración: gestiona colegios, autobuses, rutas, paradas, alumnos y usuarios desde el panel web.
+- Conductores: registran su ruta y envían ubicación GPS desde la app Android.
+- Padres: consultan el autobús asociado a sus hijos y lo siguen en tiempo real.
+- Profesores: acceden a funcionalidades de consulta y apoyo según el flujo definido por el proyecto.
+
+## Cómo Empezar
+
+1. Levanta la solución con Docker:
 
 ```bash
+# Clona el repositorio
+git clone https://github.com/nbch0203/TFG-DAM.git
+cd TFG-DAM
+
+# Levanta todos los servicios con Docker
 docker compose up -d --build
-```
 
 2. Abre la web en:
 
 ```text
-https://SCHOOLSAFETRACK.WORK.GD
+http://localhost:5173
 ```
 
-3. Revisa la documentación en este orden:
-
-- [docs/00-guia-lectura.md](docs/00-guia-lectura.md)
-- [docs/01-vision-general.md](docs/01-vision-general.md)
-- [docs/02-arquitectura.md](docs/02-arquitectura.md)
-- [docs/04-flujos-por-rol.md](docs/04-flujos-por-rol.md)
+3. Consulta la documentación detallada en:
+- [docs/indice-documentacion.md](docs/indice-documentacion.md)
+- [docs/resumen-general.md](docs/resumen-general.md)
+- [docs/flujo-sistema.md](docs/flujo-sistema.md)
 - [docs/guia-pruebas.md](docs/guia-pruebas.md)
+- [docs/panel-administrativo.md](docs/panel-administrativo.md)
 
 ## Estructura del proyecto
 
@@ -82,7 +95,10 @@ TFG-DAM/
 
 El proyecto incluye usuarios de ejemplo para validar los distintos roles. Consulta [docs/guia-pruebas.md](docs/guia-pruebas.md) para ver cómo probar cada perfil.
 
-## Pendiente de completar
+## Tecnologías
 
-- Documentar credenciales definitivas de prueba si cambian respecto al entorno local.
-- Confirmar el alcance exacto del perfil de profesorado si se añaden nuevas funciones.
+- Backend: Node.js, Express, MySQL2
+- Frontend: Vue 3, Vite
+- Android: Java según módulo del proyecto
+- Mapa: Leaflet y OpenStreetMap
+- Contenedores: Docker y Docker Compose

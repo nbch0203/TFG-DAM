@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple combined sun/moon icon (vector) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,4a1,1 0 0,1 1,1v1a1,1 0 0,1 -2,0V5a1,1 0 0,1 1,-1zM12,17a5,5 0 1,0 0,-10 5,5 0 0,0 0,10zM4.22,5.22a1,1 0 0,1 1.42,0l0.7,0.7a1,1 0 0,1 -1.42,1.42l-0.7,-0.7a1,1 0 0,1 0,-1.42zM18.36,17.36a1,1 0 0,1 1.42,0l0.7,0.7a1,1 0 0,1 -1.42,1.42l-0.7,-0.7a1,1 0 0,1 0,-1.42zM4,12a1,1 0 0,1 1,-1h1a1,1 0 0,1 0,2H5a1,1 0 0,1 -1,-1zM17,12a1,1 0 0,1 1,-1h1a1,1 0 0,1 0,2h-1a1,1 0 0,1 -1,-1zM6.34,17.66a1,1 0 0,1 0,-1.42l0.7,-0.7a1,1 0 0,1 1.42,1.42l-0.7,0.7a1,1 0 0,1 -1.42,0zM16.24,6.76a1,1 0 0,1 0,-1.42l0.7,-0.7a1,1 0 0,1 1.42,1.42l-0.7,0.7a1,1 0 0,1 -1.42,0z"/>
+</vector>
+
