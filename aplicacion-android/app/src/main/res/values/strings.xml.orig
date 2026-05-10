@@ -1,0 +1,114 @@
+<resources>
+    <string name="app_name">SchoolSafeTrack</string>
+    <string name="app_tagline">Seguimiento escolar seguro</string>
+
+    <!-- Login -->
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="welcome_back">¡Bienvenido de nuevo!</string>
+    <string name="login_subtitle">Accede a tu cuenta para continuar</string>
+    <string name="server_url_hint">URL del servidor (ej: https://schoolsafetrack.work.gd/api/)</string>
+    <string name="server_url_error">Introduce una URL válida (debe empezar por http)</string>
+
+    <!-- Parent panel -->
+    <string name="parent_panel">Mis hijos</string>
+    <string name="tab_children">Hijos</string>
+    <string name="tab_map">Seguimiento</string>
+    <string name="no_children">No hay alumnos registrados</string>
+    <string name="stop_not_assigned">Parada sin asignar</string>
+    <string name="stop">Parada</string>
+    <string name="bus_tracking">Seguimiento del bus</string>
+    <string name="no_buses_active">No hay buses activos en este momento</string>
+    <string name="follow_child">👦 Seguir hijo:</string>
+    <string name="follow_child_all">— Todos los buses —</string>
+    <string name="refresh">Actualizar</string>
+
+    <!-- Child detail -->
+    <string name="child_detail">Datos del alumno</string>
+    <string name="personal_data">Información personal</string>
+    <string name="birth_date">Fecha de nacimiento</string>
+    <string name="course">Curso</string>
+    <string name="school">Colegio</string>
+    <string name="stop_section">Parada asignada</string>
+    <string name="route_incidents">Incidencias en su trayecto</string>
+    <string name="no_incidents">Sin incidencias registradas</string>
+    <string name="incident_resolved">Resuelta</string>
+    <string name="incident_pending">Pendiente</string>
+    <string name="date">Fecha</string>
+    <string name="not_available">No disponible</string>
+
+    <!-- Incident types -->
+    <string name="incident_type_retraso">Retraso</string>
+    <string name="incident_type_mecanico">Avería mecánica</string>
+    <string name="incident_type_accidente">Accidente</string>
+    <string name="incident_type_clima">Condiciones climáticas</string>
+    <string name="incident_type_otro">Otra incidencia</string>
+
+    <!-- Driver panel -->
+    <string name="driver_panel">Mi ruta</string>
+    <string name="no_route_today">No hay ruta asignada para hoy</string>
+    <string name="stops">Paradas de la ruta</string>
+    <string name="arrival">Llegada</string>
+    <string name="departure">Salida</string>
+    <string name="report_incident">Reportar incidencia</string>
+    <string name="finish_route">Finalizar ruta</string>
+    <string name="finish_route_confirm">¿Confirmas que has finalizado la ruta?</string>
+    <string name="incident_type">Tipo de incidencia</string>
+    <string name="description">Descripción de la incidencia</string>
+    <string name="description_required">La descripción es obligatoria</string>
+    <string name="send">Enviar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="yes">Confirmar</string>
+    <string name="route_status">Estado de la ruta</string>
+    <string name="bus_plate">Matrícula</string>
+    <string name="schedule">Horario</string>
+    <string name="stop_address_not_available">Esta parada no tiene dirección disponible</string>
+    <string name="maps_app_not_found">No se encontró una app de mapas</string>
+    <string name="maps_choose_app_title">Elige app de mapas</string>
+    <string name="maps_use_default_always">Usar esta app siempre como predeterminada</string>
+    <string name="open_maps">Abrir</string>
+
+    <!-- GPS Service -->
+    <string name="gps_channel_name">Seguimiento GPS</string>
+    <string name="gps_channel_description">Canal para el seguimiento GPS del conductor</string>
+    <string name="gps_notification_title">SchoolSafeTrack activo</string>
+    <string name="gps_notification_text">Enviando ubicación en tiempo real…</string>
+
+    <!-- Generic -->
+    <string name="action_success">Operación completada correctamente</string>
+    <string name="action_error">Ha ocurrido un error</string>
+    <string name="location_permission_denied">Sin permiso de ubicación el GPS no funcionará</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_loading">Error al cargar los datos</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Mi perfil</string>
+    <string name="profile_personal_data">Datos personales</string>
+    <string name="profile_nombre">Nombre</string>
+    <string name="profile_apellidos">Apellidos</string>
+    <string name="profile_role">Rol en la aplicación</string>
+    <string name="profile_save">Guardar cambios</string>
+    <string name="profile_change_password">Cambiar contraseña</string>
+    <string name="profile_new_password">Nueva contraseña</string>
+    <string name="profile_confirm_password">Confirmar nueva contraseña</string>
+    <string name="profile_update_password">Actualizar contraseña</string>
+    <string name="profile_saved_ok">Datos guardados correctamente</string>
+    <string name="profile_photo_saved">Foto de perfil actualizada</string>
+    <string name="profile_email_required">El email es obligatorio</string>
+    <string name="profile_password_required">La contraseña es obligatoria</string>
+    <string name="profile_password_min_length">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="profile_passwords_dont_match">Las contraseñas no coinciden</string>
+    <string name="profile_logout_confirm">¿Seguro que quieres cerrar sesión?</string>
+    <string name="profile_edit_field">Editar campo</string>
+    <string name="profile_save_field">Guardar</string>
+<<<<<<< HEAD
+    <string name="role_not_supported">Rol no soportado en esta app: %1$s</string>
+=======
+    <string name="theme_toggle">Tema</string>
+    <string name="theme_light">Modo claro</string>
+    <string name="theme_dark">Modo oscuro</string>
+    <string name="theme_system">Usar tema del sistema</string>
+>>>>>>> origin/main
+</resources>
