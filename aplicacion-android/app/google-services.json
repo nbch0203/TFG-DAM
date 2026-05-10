@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "897144005080",
+    "project_id": "schoolsafetrack",
+    "storage_bucket": "schoolsafetrack.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897144005080:android:2d15481b2108767e7bd2ad",
+        "android_client_info": {
+          "package_name": "com.schoolsafetrack.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCadjuin8dHqZV8x0H1qIkn6ah0gFTQmhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+

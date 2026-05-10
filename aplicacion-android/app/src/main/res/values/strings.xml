@@ -102,4 +102,5 @@
     <string name="profile_logout_confirm">¿Seguro que quieres cerrar sesión?</string>
     <string name="profile_edit_field">Editar campo</string>
     <string name="profile_save_field">Guardar</string>
+    <string name="role_not_supported">Rol no soportado en esta app: %1$s</string>
 </resources>

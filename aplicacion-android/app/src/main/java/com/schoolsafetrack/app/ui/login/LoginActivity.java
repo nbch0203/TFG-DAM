@@ -28,28 +28,19 @@ public class LoginActivity extends AppCompatActivity {
         session = new SessionManager(this);
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        // Pre-fill server URL with the previously saved value (or the default)
-        binding.etServerUrl.setText(session.getServerUrl());
-
+        com.schoolsafetrack.app.data.network.RetrofitClient.resetWithBaseUrl(
+                com.schoolsafetrack.app.data.network.RetrofitClient.DEFAULT_BASE_URL);
         observeViewModel();
         binding.btnLogin.setOnClickListener(v -> attemptLogin());
     }
 
     private void attemptLogin() {
-        String serverUrl = binding.etServerUrl.getText().toString().trim();
-        String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString();
-
-        // Validate server URL
-        if (serverUrl.isEmpty() || !serverUrl.startsWith("http")) {
-            binding.tilServerUrl.setError(getString(R.string.server_url_error));
-            return;
-        }
-        binding.tilServerUrl.setError(null);
-        // Ensure trailing slash
-        if (!serverUrl.endsWith("/")) {
-            serverUrl = serverUrl + "/";
-        }
+        String email = binding.etEmail.getText() != null
+                ? binding.etEmail.getText().toString().trim()
+                : "";
+        String password = binding.etPassword.getText() != null
+                ? binding.etPassword.getText().toString()
+                : "";
 
         if (email.isEmpty()) {
             binding.tilEmail.setError("Introduce tu correo");
@@ -62,9 +53,6 @@ public class LoginActivity extends AppCompatActivity {
         binding.tilEmail.setError(null);
         binding.tilPassword.setError(null);
 
-        // Persist & apply the server URL before the network call
-        session.saveServerUrl(serverUrl);
-        com.schoolsafetrack.app.data.network.RetrofitClient.resetWithBaseUrl(serverUrl);
 
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.btnLogin.setEnabled(false);
@@ -103,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
             intent = new Intent(this, ParentMainActivity.class);
         } else {
             binding.tvError.setVisibility(View.VISIBLE);
-            binding.tvError.setText("Rol no soportado en esta app: " + role);
+            binding.tvError.setText(getString(R.string.role_not_supported, role));
             return;
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

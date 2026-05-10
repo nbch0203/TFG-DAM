@@ -1,35 +1,57 @@
-# Guia de Pruebas
+# Guía de pruebas
 
-Esta guia resume como validar el estado actual del proyecto desde el punto de vista funcional.
+Esta guía explica cómo arrancar el proyecto y comprobar sus funciones principales de forma sencilla.
 
-## Arranque rapido
+## Arranque rápido
 
-1. Levanta la solucion:
+1. Levanta la solución:
 
 ```bash
 docker compose up -d --build
 ```
 
-2. Abre la aplicacion web:
+2. Abre la aplicación web:
 
 ```text
-http://localhost:5173
+https://SCHOOLSAFETRACK.WORK.GD
 ```
 
-3. Comprueba que el backend responde:
+3. Comprueba que el backend responde consultando cualquier sección del panel. Nginx se encargará de enrutar la petición correctamente.
 
-```bash
-curl http://localhost:3000/health
-```
+## Qué deberías poder verificar
 
-## Validaciones recomendadas
+- **Administración**: entrar al panel, ver el dashboard y editar datos básicos.
+- **Padres y madres**: iniciar sesión, ver hijos vinculados y consultar el autobús.
+- **Conductores**: iniciar una ruta y enviar la ubicación.
 
-- Administracion: login, CRUD y asignacion de paradas.
-- Padres: seleccion de hijo y seguimiento del autobus.
-- Conductores: flujo de ruta y envio de GPS.
+## Pasos de comprobación simples
 
-## Casos habituales
+### Administración
 
-- Si un alumno no muestra autobus, revisa que tenga parada vinculada.
+1. Inicia sesión como administrador.
+2. Abre el dashboard.
+3. Revisa que se cargan rutas, autobuses y alumnos.
+
+### Padres y madres
+
+1. Inicia sesión con un usuario de prueba.
+2. Selecciona un hijo.
+3. Comprueba que aparece la ruta o el autobús asociado.
+
+### Conductores
+
+1. Abre la app del conductor.
+2. Inicia una ruta.
+3. Comprueba que la ubicación se actualiza.
+
+## Problemas comunes
+
+- Si un alumno no muestra autobús, revisa que tenga una parada vinculada.
 - Si una parada no aparece en seguimiento, confirma que pertenezca a una ruta activa.
-- Si un padre no ve hijos, comprueba que el `parent_id` coincide con el usuario autenticado.
+- Si un padre no ve hijos, comprueba que el usuario autenticado sea el correcto.
+- Si no carga el mapa, revisa que el backend esté levantado y que haya datos disponibles.
+
+## Pendiente de completar
+
+- Añadir credenciales exactas de prueba si se fijan en un archivo aparte.
+- Documentar un caso de prueba completo para GPS y notificaciones cuando estén cerrados.

@@ -1,35 +1,39 @@
-# Flujo del Sistema
+# Flujo del sistema
 
-Este documento resume como se conectan autenticacion, paneles por rol, backend y mapas.
+Este documento explica el recorrido básico de la información dentro de SchoolSafeTrack.
 
-## Flujo principal
-
-```text
-Navegador -> App.vue -> POST /api/login -> sessionStorage -> panel por rol
-```
-
-## Panel de padres
+## Flujo general
 
 ```text
-ParentPage.vue -> ParentBusTracking.vue -> children + buses -> calculo de bus activo -> Leaflet
+Usuario -> interfaz web o app -> backend -> base de datos -> respuesta en pantalla
 ```
 
-El seguimiento de padres usa la relacion:
+## Flujo de acceso
 
 ```text
-alumno -> parada(s) -> ruta -> bus asignado ese dia
+Pantalla de login -> backend -> validación de usuario -> acceso según rol
 ```
 
-## Administracion
+## Flujo de seguimiento
 
 ```text
-AdminPage.vue -> modulos CRUD -> endpoints REST -> base de datos
+Conductor inicia ruta -> app envía ubicación -> backend guarda datos -> familia ve el autobús en el mapa
 ```
 
-## Datos y vinculos
+## Flujo de administración
 
-- `students.parent_id` apunta al usuario padre.
-- `student_stops` guarda las paradas asociadas a cada alumno.
-- `stops.route_id` relaciona una parada con una ruta.
-- `route_assignments` vincula rutas con autobuses para un dia concreto.
-- `buses.lat/lon` alimenta el mapa de seguimiento.
+```text
+Admin entra al panel -> crea o edita datos -> backend guarda cambios -> el sistema refleja la actualización
+```
+
+## Relaciones clave
+
+- `students.parent_id` vincula al alumno con su tutor o padre.
+- `stops.route_id` indica a qué ruta pertenece una parada.
+- `route_assignments` relaciona ruta, bus y conductor para una fecha concreta.
+- `real_time_location` guarda la posición del autobús mientras circula.
+
+## Pendiente de completar
+
+- Añadir el flujo específico del profesorado cuando su uso quede definido.
+- Explicar con más detalle cómo se generan las alertas o notificaciones.

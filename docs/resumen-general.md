@@ -1,25 +1,30 @@
 # SchoolSafeTrack - Resumen General
 
-SchoolSafeTrack es una plataforma de transporte escolar para seguimiento en tiempo real, gestion de rutas y control por roles.
+SchoolSafeTrack es una plataforma de transporte escolar que permite seguir autobuses en tiempo real, gestionar rutas y organizar la información por perfiles de usuario. Su objetivo es facilitar el trabajo de la administración y dar más tranquilidad a las familias.
 
-## Bloques del sistema
+## Qué ofrece el sistema
 
-- Administracion: gestiona colegios, autobuses, rutas, paradas, alumnos y usuarios.
-- Padres: consultan el autobus asociado a sus hijos y lo siguen en tiempo real.
-- Conductores: registran su ruta y envian ubicacion GPS desde la app Android.
-- Profesores: acceden a consultas y apoyo segun el flujo definido por el proyecto.
+- Seguimiento del autobús en un mapa.
+- Gestión de rutas, paradas, alumnos y autobuses.
+- Control de acceso por roles.
+- Consulta rápida del estado del servicio.
 
-## Tecnologias
+## Quién usa cada parte
 
-- Backend: Node.js, Express, MySQL2
-- Frontend web: Vue 3, Vite
-- Movil: Android
-- Mapas: Leaflet y OpenStreetMap
-- Contenedores: Docker y Docker Compose
+- **Padres y madres**: ven el bus de sus hijos.
+- **Conductores**: envían ubicación y controlan la ruta.
+- **Administración**: mantiene los datos del sistema.
+- **Profesorado**: rol de consulta o apoyo, pendiente de cerrar si se amplía.
 
-## Documentacion relacionada
+## Cómo encaja en el proyecto
 
-- [indice-documentacion.md](indice-documentacion.md)
-- [guia-pruebas.md](guia-pruebas.md)
-- [flujo-sistema.md](flujo-sistema.md)
-- [panel-administrativo.md](panel-administrativo.md)
+Este documento resume el sistema de forma simple. Si quieres entender mejor cada parte, sigue este orden:
+
+1. [00-guia-lectura.md](00-guia-lectura.md)
+2. [01-vision-general.md](01-vision-general.md)
+3. [02-arquitectura.md](02-arquitectura.md)
+4. [04-flujos-por-rol.md](04-flujos-por-rol.md)
+
+## Pendiente de completar
+
+- Añadir una versión más visual si el documento se usa en la memoria final.

@@ -1,43 +1,33 @@
 # 🚍 SchoolSafeTrack – TFG-DAM
 
-**Sistema de Transporte Escolar Seguro**
+SchoolSafeTrack es una plataforma de transporte escolar que permite seguir autobuses en tiempo real, coordinar rutas y controlar el servicio por perfiles de usuario. El objetivo es dar tranquilidad a las familias, facilitar el trabajo de la administración y ayudar al conductor a registrar la ruta con menos errores. La información se organiza para que cualquier persona pueda entender el proyecto sin conocer su base técnica.
 
-Plataforma integral para el seguimiento en tiempo real del transporte escolar, orientada a garantizar la seguridad de los alumnos y la tranquilidad de las familias.
+> 📋 Si quieres ver la planificación completa, consulta [PLAN.md](./PLAN.md).
 
-> 📋 Consulta el archivo [PLAN.md](./PLAN.md) para ver la planificación completa del proyecto.
+## Qué resuelve
 
----
+El proyecto resuelve un problema muy concreto: saber dónde está el autobús escolar, qué ruta está haciendo y cómo se relaciona esa información con los alumnos y las paradas. Así, los padres pueden seguir el trayecto, el conductor puede enviar su ubicación y la administración puede gestionar la operación desde un panel web.
 
-## 🎯 ¿Qué es SchoolSafeTrack?
+## Funcionalidades principales
 
-| Quién | Qué obtiene |
-|-------|-------------|
-| 👨‍👩‍👦 **Padres** | Ven la ubicación del bus de su hijo en tiempo real y reciben notificaciones push |
-| 🚍 **Conductores** | Usan una app móvil para iniciar/finalizar rutas y enviar su posición automáticamente |
-| 🏫 **Administración** | Gestionan rutas, paradas, alumnos y conductores desde un panel web con mapas en vivo |
+| Perfil | Para qué sirve |
+|---|---|
+| 👨‍👩‍👦 Padres | Ver el autobús asociado a sus hijos en un mapa y recibir avisos del trayecto. |
+| 🚍 Conductores | Iniciar y terminar rutas, y enviar la ubicación del autobús de forma automática. |
+| 🏫 Administración | Gestionar colegios, rutas, paradas, alumnos, autobuses y usuarios desde el panel web. |
+| 👩‍🏫 Profesorado | Consultar información de apoyo relacionada con el flujo del proyecto. |
 
----
+## Cómo está hecho, a grandes rasgos
 
-## 🧰 Stack Tecnológico
+- **App Android**: usada por el conductor para registrar la ruta y compartir la ubicación.
+- **Frontend web**: panel de administración y vista para familias.
+- **Backend**: API que recibe peticiones, aplica reglas de acceso y conecta con la base de datos.
+- **Base de datos MySQL**: guarda usuarios, rutas, paradas, alumnos, mensajes y ubicaciones.
+- **Mapa en vivo**: muestra el autobús sobre el mapa usando datos del backend.
 
-| Capa | Tecnología |
-|------|-----------|
-| 📱 App móvil | Java (Android) |
-# SchoolSafeTrack
+## Cómo se usa o se ejecuta
 
-Sistema de transporte escolar para seguimiento en tiempo real, gestión de rutas y control por roles.
-
-## Resumen General
-
-SchoolSafeTrack organiza el transporte escolar en torno a cuatro perfiles:
-- Administración: gestiona colegios, autobuses, rutas, paradas, alumnos y usuarios desde el panel web.
-- Conductores: registran su ruta y envían ubicación GPS desde la app Android.
-- Padres: consultan el autobús asociado a sus hijos y lo siguen en tiempo real.
-- Profesores: acceden a funcionalidades de consulta y apoyo según el flujo definido por el proyecto.
-
-## Cómo Empezar
-
-1. Levanta la solución con Docker:
+1. Inicia los servicios con Docker:
 
 ```bash
 docker compose up -d --build
@@ -46,45 +36,53 @@ docker compose up -d --build
 2. Abre la web en:
 
 ```text
-http://localhost:5173
+https://SCHOOLSAFETRACK.WORK.GD
 ```
 
-3. Consulta la documentación detallada en:
-- [docs/indice-documentacion.md](docs/indice-documentacion.md)
-- [docs/resumen-general.md](docs/resumen-general.md)
-- [docs/flujo-sistema.md](docs/flujo-sistema.md)
-- [docs/guia-pruebas.md](docs/guia-pruebas.md)
-- [docs/panel-administrativo.md](docs/panel-administrativo.md)
+3. Revisa la documentación en este orden:
 
-## Estructura del Proyecto
+- [docs/00-guia-lectura.md](docs/00-guia-lectura.md)
+- [docs/01-vision-general.md](docs/01-vision-general.md)
+- [docs/02-arquitectura.md](docs/02-arquitectura.md)
+- [docs/04-flujos-por-rol.md](docs/04-flujos-por-rol.md)
+- [docs/guia-pruebas.md](docs/guia-pruebas.md)
+
+## Estructura del proyecto
 
 ```text
 TFG-DAM/
-├── aplicacion-android/     App Android para conductor y seguimiento
-├── backend/                API Express, lógica de negocio y SQL
-├── frontend-web/           Panel web de administración y padres
-├── docs/                   Documentación por secciones del proyecto
-├── Simulacion ubicacion/    Scripts de simulación GPS
-├── docker-compose.yml      Orquestación de servicios
-└── README.md               Índice general del proyecto
+├── aplicacion-android/   App Android para el conductor
+├── backend/              API, lógica de negocio y base de datos
+├── frontend-web/         Panel web y vistas para consulta
+├── docs/                 Documentación general y técnica
+├── Simulacion ubicacion/  Scripts para simular movimiento GPS
+├── docker-compose.yml    Arranque conjunto de servicios
+└── README.md             Punto de entrada del proyecto
 ```
 
-## Documentación Principal
+## Documentación principal
 
-- [docs/indice-documentacion.md](docs/indice-documentacion.md): índice de la documentación interna.
-- [docs/resumen-general.md](docs/resumen-general.md): visión general del sistema y módulos.
-- [docs/flujo-sistema.md](docs/flujo-sistema.md): flujo entre login, roles, backend y mapas.
-- [docs/guia-pruebas.md](docs/guia-pruebas.md): credenciales, pruebas y verificación.
-- [docs/panel-administrativo.md](docs/panel-administrativo.md): detalle técnico de la gestión administrativa.
+- [docs/00-guia-lectura.md](docs/00-guia-lectura.md): por dónde empezar según el tipo de usuario.
+- [docs/01-vision-general.md](docs/01-vision-general.md): explicación simple del proyecto, objetivos y roles.
+- [docs/02-arquitectura.md](docs/02-arquitectura.md): cómo se conecta cada parte del sistema.
+- [docs/03-modelo-datos.md](docs/03-modelo-datos.md): tablas principales y relaciones importantes.
+- [docs/04-flujos-por-rol.md](docs/04-flujos-por-rol.md): qué hace cada perfil y cómo usa el sistema.
+- [docs/guia-pruebas.md](docs/guia-pruebas.md): cómo arrancar y comprobar que todo funciona.
 
-## Usuarios de Prueba
+## Documentación por contenedor
 
-El proyecto incluye usuarios de ejemplo para validar los distintos roles. Revisa [docs/guia-pruebas.md](docs/guia-pruebas.md) para ver las credenciales actualizadas y el alcance de cada perfil.
+- [docs/backend/README.md](docs/backend/README.md): API, rutas, base de datos.
+- [docs/backend/api-endpoints.md](docs/backend/api-endpoints.md): lista de endpoints principales.
+- [docs/frontend-web/README.md](docs/frontend-web/README.md): panel web, componentes, pantallas.
+- [docs/frontend-web/componentes.md](docs/frontend-web/componentes.md): componentes Vue principales.
+- [docs/aplicacion-android/README.md](docs/aplicacion-android/README.md): app móvil, estructura, flujos.
+- [docs/aplicacion-android/gps-ubicacion.md](docs/aplicacion-android/gps-ubicacion.md): cómo funciona el GPS en la app.
 
-## Tecnologías
+## Usuarios de prueba
 
-- Backend: Node.js, Express, MySQL2
-- Frontend: Vue 3, Vite
-- Android: Java según módulo del proyecto
-- Mapa: Leaflet y OpenStreetMap
-- Contenedores: Docker y Docker Compose
+El proyecto incluye usuarios de ejemplo para validar los distintos roles. Consulta [docs/guia-pruebas.md](docs/guia-pruebas.md) para ver cómo probar cada perfil.
+
+## Pendiente de completar
+
+- Documentar credenciales definitivas de prueba si cambian respecto al entorno local.
+- Confirmar el alcance exacto del perfil de profesorado si se añaden nuevas funciones.

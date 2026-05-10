@@ -1,19 +1,23 @@
-# Panel Administrativo
+# Panel administrativo
 
-Documento tecnico de la parte administrativa del sistema: panel web, CRUD principales y extensiones del backend.
+Este documento explica la parte web que usa la administración para mantener el sistema al día.
 
-## Alcance funcional
+## Para qué sirve
+
+El panel permite revisar el estado general del servicio y administrar los datos principales del proyecto sin tocar directamente la base de datos.
+
+## Qué incluye
 
 - Dashboard general.
-- Gestion de autobuses.
-- Gestion de usuarios.
-- Gestion de colegios.
-- Gestion de alumnos.
-- Gestion de rutas.
-- Gestion de paradas.
+- Gestión de autobuses.
+- Gestión de usuarios.
+- Gestión de colegios.
+- Gestión de alumnos.
+- Gestión de rutas.
+- Gestión de paradas.
 - Mensajes e incidencias administrativas.
 
-## Frontend
+## Pantallas principales
 
 - `frontend-web/src/AdminPage/AdminPage.vue`
 - `frontend-web/src/AdminDashboard/AdminDashboard.vue`
@@ -25,7 +29,7 @@ Documento tecnico de la parte administrativa del sistema: panel web, CRUD princi
 - `frontend-web/src/StopManagement/StopManagement.vue`
 - `frontend-web/src/AdminMessages/AdminMessages.vue`
 
-## Backend
+## Rutas del backend
 
 - `/api/users`, `/api/users/:id`
 - `/api/colegios`, `/api/schools`
@@ -35,7 +39,7 @@ Documento tecnico de la parte administrativa del sistema: panel web, CRUD princi
 - `/api/stops`
 - `/api/admin/messages` y subrutas asociadas
 
-## Base de datos
+## Datos relacionados
 
 - `users`
 - `schools`
@@ -48,9 +52,14 @@ Documento tecnico de la parte administrativa del sistema: panel web, CRUD princi
 - `admin_messages`
 - `admin_message_notes`
 
-## Uso recomendado
+## Flujo de uso
 
 1. Entra como administrador.
 2. Revisa el dashboard.
 3. Gestiona colegios, rutas y paradas.
-4. Asigna alumnos y comprueba la relacion alumno -> parada -> ruta -> bus.
+4. Asigna alumnos y comprueba la relación alumno -> parada -> ruta -> bus.
+
+## Pendiente de completar
+
+- Describir con más detalle qué valida cada formulario.
+- Confirmar si todos los nombres de rutas del backend están estables.
