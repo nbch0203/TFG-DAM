@@ -11,6 +11,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const backendRoot = path.resolve(__dirname, '..');
 
+const PLACEHOLDER_VALUES = new Set([
+  'tu-endpoint-mysql-aws',
+  'usuario',
+  'contraseña',
+  'tu-project-id',
+  '/ruta/al/service-account.json',
+]);
+
 const parseArgs = (argv) => {
   const options = {
     title: 'Prueba de notificación',
@@ -58,6 +66,27 @@ const createPool = () => {
   });
 };
 
+const validateEnvironment = () => {
+  const dbHost = String(process.env.DB_HOST || '').trim();
+  const dbUser = String(process.env.DB_USER || '').trim();
+  const dbPassword = String(process.env.DB_PASSWORD || '').trim();
+  const dbName = String(process.env.DB_NAME || '').trim();
+
+  const invalidFields = [];
+
+  if (!dbHost || PLACEHOLDER_VALUES.has(dbHost)) invalidFields.push('DB_HOST');
+  if (!dbUser || PLACEHOLDER_VALUES.has(dbUser)) invalidFields.push('DB_USER');
+  if (!dbPassword || PLACEHOLDER_VALUES.has(dbPassword)) invalidFields.push('DB_PASSWORD');
+  if (!dbName || PLACEHOLDER_VALUES.has(dbName)) invalidFields.push('DB_NAME');
+
+  if (invalidFields.length > 0) {
+    throw new Error(
+      `Variables de MySQL no configuradas correctamente: ${invalidFields.join(', ')}. ` +
+      'Sustituye los valores de ejemplo en backend/.env por los datos reales de tu base de datos.'
+    );
+  }
+};
+
 const getParentTokens = async (pool) => {
   const [rows] = await pool.query(
     `SELECT DISTINCT
@@ -84,6 +113,8 @@ const main = async () => {
     console.log('Uso: npm run test:push:parents -- [--title="..."] [--body="..."]');
     process.exit(0);
   }
+
+  validateEnvironment();
 
   const pool = createPool();
 
