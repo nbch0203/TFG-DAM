@@ -4,7 +4,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:push:parents": "node scripts/send-test-parent-push.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

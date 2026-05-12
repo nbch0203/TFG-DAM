@@ -17,6 +17,10 @@
     <string name="tab_children">Hijos</string>
     <string name="tab_map">Seguimiento</string>
     <string name="no_children">No hay alumnos registrados</string>
+    <plurals name="children_count">
+        <item quantity="one">%d alumno</item>
+        <item quantity="other">%d alumnos</item>
+    </plurals>
     <string name="stop_not_assigned">Parada sin asignar</string>
     <string name="stop">Parada</string>
     <string name="bus_tracking">Seguimiento del bus</string>
@@ -77,6 +81,10 @@
     <string name="gps_channel_description">Canal para el seguimiento GPS del conductor</string>
     <string name="gps_notification_title">SchoolSafeTrack activo</string>
     <string name="gps_notification_text">Enviando ubicación en tiempo real…</string>
+
+    <!-- Push notifications -->
+    <string name="push_channel_name">Avisos de ruta</string>
+    <string name="push_channel_description">Notificaciones de llegadas, salidas e incidencias</string>
 
     <!-- Generic -->
     <string name="action_success">Operación completada correctamente</string>

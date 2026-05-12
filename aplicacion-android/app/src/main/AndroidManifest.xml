@@ -92,9 +92,6 @@
             android:foregroundServiceType="location"
             android:exported="false" />
 
-        <!-- Servicio FCM para notificaciones push -->
-        <!-- NOTA: Para activar FCM, añade google-services.json y el plugin google-services -->
-        <!--
         <service
             android:name=".fcm.SchoolFcmService"
             android:exported="false">
@@ -102,7 +99,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        -->
 
     </application>
 

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.schoolsafetrack.app.R;
 import com.schoolsafetrack.app.data.repository.SessionManager;
+import com.schoolsafetrack.app.fcm.FcmTokenSyncManager;
 import com.schoolsafetrack.app.databinding.ActivityLoginBinding;
 import com.schoolsafetrack.app.ui.driver.DriverMainActivity;
 import com.schoolsafetrack.app.ui.parent.ParentMainActivity;
@@ -66,6 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (response != null && response.isSuccess()) {
                 session.saveSession(response.getUser());
+                FcmTokenSyncManager.syncCurrentToken(this);
                 redirectByRole(response.getUser().getRole());
             } else if (response != null) {
                 binding.tvError.setVisibility(View.VISIBLE);

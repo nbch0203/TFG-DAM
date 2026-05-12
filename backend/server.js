@@ -10,6 +10,7 @@ import os from 'os';
 import { exec } from 'child_process';
 import util from 'util';
 import fs from 'fs';
+import { sendFcmMessage } from './fcm.js';
 
 dotenv.config();
 
@@ -410,6 +411,116 @@ const normalizeStopIds = (stopIdsInput, fallbackStopId) => {
 
   return ids;
 };
+const getRouteAssignmentContext = async (routeAssignmentId) => {
+  const [rows] = await pool.query(
+    `SELECT ra.id AS assignment_id, ra.route_id, r.nombre AS route_nombre, ra.bus_id, b.matricula
+     FROM route_assignments ra
+     INNER JOIN routes r ON ra.route_id = r.id
+     INNER JOIN buses b ON ra.bus_id = b.id
+     WHERE ra.id = ?
+     LIMIT 1`,
+    [routeAssignmentId]
+  );
+  return rows[0] || null;
+};
+const getPushRecipientsForStop = async (routeId, stopId) => {
+  if (!routeId || !stopId) return [];
+  const [rows] = await pool.query(
+    `SELECT DISTINCT
+       p.id AS parent_id,
+       p.email AS parent_email,
+       s.id AS child_id,
+       s.nombre AS child_nombre,
+       s.apellidos AS child_apellidos,
+       CONCAT_WS(' ', s.nombre, s.apellidos) AS child_full_name,
+       dt.token AS device_token
+     FROM students s
+     INNER JOIN users p ON p.id = s.parent_id
+       AND p.role = 'PARENT'
+       AND p.activo = 1
+     INNER JOIN device_tokens dt ON dt.user_id = p.id
+       AND dt.activo = 1
+     WHERE s.activo = 1
+       AND (
+         EXISTS (
+           SELECT 1
+           FROM student_stops ss
+           INNER JOIN stops st ON st.id = ss.stop_id
+           WHERE ss.student_id = s.id
+             AND st.id = ?
+             AND st.route_id = ?
+         )
+         OR EXISTS (
+           SELECT 1
+           FROM stops st2
+           WHERE st2.id = s.stop_id
+             AND st2.route_id = ?
+         )
+       )`,
+    [stopId, routeId, routeId]
+  );
+  return rows;
+};
+const getPushRecipientsForRoute = async (routeId) => {
+  if (!routeId) return [];
+  const [rows] = await pool.query(
+    `SELECT DISTINCT
+       p.id AS parent_id,
+       p.email AS parent_email,
+       s.id AS child_id,
+       s.nombre AS child_nombre,
+       s.apellidos AS child_apellidos,
+       CONCAT_WS(' ', s.nombre, s.apellidos) AS child_full_name,
+       dt.token AS device_token
+     FROM students s
+     INNER JOIN users p ON p.id = s.parent_id
+       AND p.role = 'PARENT'
+       AND p.activo = 1
+     INNER JOIN device_tokens dt ON dt.user_id = p.id
+       AND dt.activo = 1
+     WHERE s.activo = 1
+       AND (
+         EXISTS (
+           SELECT 1
+           FROM student_stops ss
+           INNER JOIN stops st ON st.id = ss.stop_id
+           WHERE ss.student_id = s.id
+             AND st.route_id = ?
+         )
+         OR EXISTS (
+           SELECT 1
+           FROM stops st2
+           WHERE st2.id = s.stop_id
+             AND st2.route_id = ?
+         )
+       )`,
+    [routeId, routeId]
+  );
+  return rows;
+};
+const getChildDisplayName = (recipient) => {
+  if (!recipient) return 'el alumno';
+  const fullName = String(recipient.child_full_name || '').trim();
+  if (fullName) return fullName;
+  const nameParts = [recipient.child_nombre, recipient.child_apellidos]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean);
+  return nameParts.join(' ') || 'el alumno';
+};
+const sendPushToRecipients = async (recipients, buildMessage) => {
+  if (!Array.isArray(recipients) || recipients.length === 0) {
+    return { sent: 0, failed: 0, skipped: true };
+  }
+  const results = await Promise.allSettled(
+    recipients.map((recipient) => sendFcmMessage(buildMessage(recipient)))
+  );
+  return {
+    sent: results.filter((result) => result.status === 'fulfilled').length,
+    failed: results.filter((result) => result.status === 'rejected').length,
+    results,
+  };
+};
+
 
 // Normaliza valores porcentuales provenientes de docker
 const toPercent = (value = '') => {
@@ -675,6 +786,46 @@ app.post('/api/login', async (req, res) => {
     });
   } catch (err) {
     handleError(res, err, 'Error en login');
+  }
+});
+
+app.post('/api/users/device-token', async (req, res) => {
+  try {
+    const { userId, token, platform, model, versionApp, appVersion } = req.body;
+    const numericUserId = Number(userId);
+    if (!Number.isInteger(numericUserId) || numericUserId <= 0) {
+      return res.status(400).json({ error: 'userId inválido' });
+    }
+    if (!token || String(token).trim() === '') {
+      return res.status(400).json({ error: 'token es requerido' });
+    }
+    const [users] = await pool.query('SELECT id, role, activo FROM users WHERE id = ? LIMIT 1', [numericUserId]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    const deviceType = String(platform || 'ANDROID').toUpperCase();
+    const allowedDevices = new Set(['ANDROID', 'IOS', 'WEB']);
+    const normalizedDevice = allowedDevices.has(deviceType) ? deviceType : 'ANDROID';
+    const normalizedVersion = versionApp || appVersion || null;
+    await pool.query(
+      'UPDATE device_tokens SET activo = 0, updated_at = NOW() WHERE token = ? AND user_id <> ?',
+      [String(token).trim(), numericUserId]
+    );
+    await pool.query(
+      `INSERT INTO device_tokens (user_id, token, dispositivo, modelo_dispositivo, version_app, activo, ultimo_uso)
+       VALUES (?, ?, ?, ?, ?, 1, NOW())
+       ON DUPLICATE KEY UPDATE
+         dispositivo = VALUES(dispositivo),
+         modelo_dispositivo = COALESCE(VALUES(modelo_dispositivo), modelo_dispositivo),
+         version_app = COALESCE(VALUES(version_app), version_app),
+         activo = 1,
+         ultimo_uso = NOW(),
+         updated_at = NOW()`,
+      [numericUserId, String(token).trim(), normalizedDevice, model || null, normalizedVersion]
+    );
+    res.json({ success: true, message: 'Token registrado correctamente' });
+  } catch (err) {
+    handleError(res, err, 'Error al registrar token FCM');
   }
 });
 
@@ -1867,6 +2018,35 @@ app.post('/api/driver/checkins', async (req, res) => {
     const stopName = stopInfo[0]?.nombre || `Parada ${stopId}`;
     const actionLabel = action === 'ARRIVAL' ? 'llegada' : 'salida';
 
+    try {
+      const routeContext = await getRouteAssignmentContext(routeAssignmentId);
+      const recipients = routeContext ? await getPushRecipientsForStop(routeContext.route_id, stopId) : [];
+      await sendPushToRecipients(recipients, (recipient) => {
+        const childName = getChildDisplayName(recipient);
+        const isArrival = action === 'ARRIVAL';
+        return {
+          token: recipient.device_token,
+          title: isArrival ? `Llegada a ${stopName}` : `Salida de ${stopName}`,
+          body: isArrival
+            ? `${childName} ha llegado a ${stopName}.`
+            : `${childName} ha salido de ${stopName}.`,
+          data: {
+            type: isArrival ? 'LLEGADA' : 'SALIDA',
+            childId: recipient.child_id,
+            childName,
+            stopId,
+            stopName,
+            routeAssignmentId,
+            routeId: routeContext.route_id,
+            routeName: routeContext.route_nombre,
+            action,
+          },
+        };
+      });
+    } catch (pushErr) {
+      console.warn('No se pudo enviar la notificación FCM de check-in:', pushErr.message);
+    }
+
     await pool.query(
       `INSERT INTO admin_messages (subject, content, sender_name, type, status, priority, \`read\`, created_at, updated_at)
        VALUES (?, ?, ?, 'info', 'nuevo', 'media', 0, NOW(), NOW())`,
@@ -1937,6 +2117,32 @@ app.post('/api/driver/incidents', async (req, res) => {
       throw txErr;
     } finally {
       conn.release();
+    }
+
+    try {
+      const routeContext = await getRouteAssignmentContext(routeAssignmentId);
+      const recipients = routeContext ? await getPushRecipientsForRoute(routeContext.route_id) : [];
+      await sendPushToRecipients(recipients, (recipient) => {
+        const childName = getChildDisplayName(recipient);
+        return {
+          token: recipient.device_token,
+          title: `Incidencia en ${routeContext?.route_nombre || 'la ruta'}`,
+          body: `${childName}: ${descripcion}`,
+          data: {
+            type: 'INCIDENCIA',
+            childId: recipient.child_id,
+            childName,
+            routeAssignmentId,
+            routeId: routeContext?.route_id,
+            routeName: routeContext?.route_nombre,
+            incidentId: result.insertId,
+            incidentType: tipo,
+            description: descripcion,
+          },
+        };
+      });
+    } catch (pushErr) {
+      console.warn('No se pudo enviar la notificación FCM de incidencia:', pushErr.message);
     }
 
     res.status(201).json({

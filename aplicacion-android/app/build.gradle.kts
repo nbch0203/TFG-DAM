@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    // id("com.google.gms.google-services")  // Desactivado: ver SchoolFcmService.java para activar FCM
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -50,8 +50,8 @@ dependencies {
     implementation(libs.viewpager2)
     implementation(libs.play.services.location)
     implementation(libs.recyclerview)
-    // implementation(platform("com.google.firebase:firebase-bom:34.12.0"))  // Desactivado: ver SchoolFcmService.java para activar FCM
-    // implementation("com.google.firebase:firebase-analytics")  // Desactivado: ver SchoolFcmService.java para activar FCM
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

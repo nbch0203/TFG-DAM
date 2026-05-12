@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.schoolsafetrack.app.data.network.RetrofitClient;
 import com.schoolsafetrack.app.data.repository.SessionManager;
+import com.schoolsafetrack.app.fcm.FcmTokenSyncManager;
 import com.schoolsafetrack.app.ui.driver.DriverMainActivity;
 import com.schoolsafetrack.app.ui.login.LoginActivity;
 import com.schoolsafetrack.app.ui.parent.ParentMainActivity;
@@ -26,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
         // Restore the previously saved server URL (important for physical devices)
         RetrofitClient.resetWithBaseUrl(session.getServerUrl());
 
+        if (session.isLoggedIn()) {
+            FcmTokenSyncManager.syncCurrentToken(this);
+        }
+
         Intent intent;
 
         if (session.isLoggedIn()) {
@@ -42,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        Bundle extras = getIntent() != null ? getIntent().getExtras() : null;
+        if (extras != null) {
+            intent.putExtras(extras);
+        }
+
         startActivity(intent);
         finish();
     }

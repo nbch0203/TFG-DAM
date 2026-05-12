@@ -1,11 +1,13 @@
 package com.schoolsafetrack.app.ui.parent;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.pm.PackageManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,16 +40,18 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.overlay.Marker;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ParentMainActivity extends AppCompatActivity implements ChildrenAdapter.OnChildClickListener {
 
     private static final int TAB_CHILDREN = 0;
-    private static final int TAB_MAP = 1;
+    private static final int NOTIFICATION_PERMISSION_REQUEST = 201;
     private static final long POLL_INTERVAL_MS = 1000L;
 
     private ActivityParentMainBinding binding;
@@ -92,7 +97,12 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         setupRecyclerView();
         setupMap();
         setupChildSpinner();
+        requestNotificationPermissionIfNeeded();
         observeViewModel();
+
+        if (handleNotificationLaunch()) {
+            return;
+        }
 
         long parentId = session.getUserId();
         viewModel.loadChildren(parentId);
@@ -158,11 +168,12 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         binding.rvChildren.setAdapter(childrenAdapter);
     }
 
+    @SuppressWarnings("deprecation")
     private void setupMap() {
         MapView map = binding.mapView;
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
-        map.setBuiltInZoomControls(true);
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         // Initial zoom
         map.getController().setZoom(12.0);
         // Prevent excessive zooming out (evita repetición de mosaicos al alejar mucho)
@@ -176,6 +187,67 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         } catch (Throwable ignored) {
             // Otros errores inesperados: ignorar para no romper la app en dispositivos
         }
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    NOTIFICATION_PERMISSION_REQUEST);
+        }
+    }
+
+    private boolean handleNotificationLaunch() {
+        Intent intent = getIntent();
+        if (intent == null) return false;
+
+        long childId = extractChildId(intent);
+        if (childId <= 0) return false;
+
+        Intent detailIntent = new Intent(this, ChildDetailActivity.class);
+        detailIntent.putExtra(ChildDetailActivity.EXTRA_CHILD_ID, childId);
+
+        copyStringExtra(intent, detailIntent, "notification_child_name", ChildDetailActivity.EXTRA_CHILD_NOMBRE);
+        copyStringExtra(intent, detailIntent, "notification_child_apellidos", ChildDetailActivity.EXTRA_CHILD_APELLIDOS);
+        copyStringExtra(intent, detailIntent, "notification_child_curso", ChildDetailActivity.EXTRA_CHILD_CURSO);
+        copyStringExtra(intent, detailIntent, "notification_child_fecha_nac", ChildDetailActivity.EXTRA_CHILD_FECHA_NAC);
+        copyStringExtra(intent, detailIntent, "notification_child_school", ChildDetailActivity.EXTRA_CHILD_SCHOOL);
+        copyStringExtra(intent, detailIntent, "notification_stop_name", ChildDetailActivity.EXTRA_CHILD_STOP_NOMBRE);
+        copyStringExtra(intent, detailIntent, "notification_stop_address", ChildDetailActivity.EXTRA_CHILD_STOP_DIR);
+
+        int avatarColor = intent.getIntExtra("notification_child_avatar_color", -1);
+        if (avatarColor != -1) {
+            detailIntent.putExtra(ChildDetailActivity.EXTRA_CHILD_AVATAR_COLOR, avatarColor);
+        }
+
+        startActivity(detailIntent);
+        finish();
+        return true;
+    }
+
+    private long extractChildId(Intent intent) {
+        long childId = intent.getLongExtra("notification_child_id", -1);
+        if (childId > 0) return childId;
+
+        String raw = intent.getStringExtra("notification_child_id");
+        if (raw == null) raw = intent.getStringExtra("childId");
+        if (raw == null) return -1;
+
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
+
+    private void copyStringExtra(Intent source, Intent target, String sourceKey, String targetKey) {
+        if (source == null || target == null) return;
+        String value = source.getStringExtra(sourceKey);
+        if (value == null) return;
+        target.putExtra(targetKey, value);
     }
 
      private void setupChildSpinner() {
@@ -195,7 +267,7 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
                      followedChildId = null;
                  } else if (position > 0 && position - 1 < latestChildren.size()) {
                      Child selected = latestChildren.get(position - 1);
-                     followedChildId = Long.valueOf(selected.getId());
+                     followedChildId = selected.getId();
                  } else {
                      followedChildId = null;
                  }
@@ -272,7 +344,8 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         viewModel.getChildren().observe(this, children -> {
             childrenAdapter.setChildren(children);
             int count = children != null ? children.size() : 0;
-            binding.tvChildrenCount.setText(count + (count == 1 ? " alumno" : " alumnos"));
+            binding.tvChildrenCount.setText(getResources().getQuantityString(
+                    R.plurals.children_count, count, count));
             binding.tvEmptyChildren.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
             refreshChildSpinner(children);
         });
@@ -341,12 +414,12 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         } else {
             // Show only the bus of the followed child
             for (Bus bus : buses) {
-                if (bus.getId() == followedBusId.longValue()) {
-                    visibleBuses.add(bus);
-                    break;
-                }
-            }
-        }
+                if (Objects.equals(followedBusId, bus.getId())) {
+                     visibleBuses.add(bus);
+                     break;
+                 }
+             }
+         }
 
         // Icono de bus personalizado
         Drawable busIcon = ContextCompat.getDrawable(this, R.drawable.ic_bus_marker);
@@ -419,12 +492,12 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
     private Long getFollowedBusId() {
         if (followedChildId == null) return null;
         for (Child child : latestChildren) {
-            if (child.getId() == followedChildId.longValue()) {
-                Long busId = child.getBusId();
-                return (busId != null && busId > 0) ? busId : null;
-            }
-        }
-        return null;
+            if (Objects.equals(followedChildId, child.getId())) {
+                 Long busId = child.getBusId();
+                 return (busId != null && busId > 0) ? busId : null;
+             }
+         }
+         return null;
     }
 
     @Override
@@ -460,13 +533,6 @@ public class ParentMainActivity extends AppCompatActivity implements ChildrenAda
         actionView.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
-    private void logout() {
-        session.clearSession();
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
 
     private void updateToolbarAvatarPhoto(long userId, String fallbackInitial) {
         if (ivToolbarAvatarPhoto == null) return;

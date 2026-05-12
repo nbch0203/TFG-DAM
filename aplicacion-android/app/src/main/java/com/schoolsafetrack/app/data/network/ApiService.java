@@ -17,7 +17,6 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
-import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -34,6 +33,9 @@ public interface ApiService {
     Call<UpdateProfileResponse> updateProfile(
             @Path("id") long id,
             @Body Map<String, String> fields);
+
+    @POST("users/device-token")
+    Call<ApiResponse> registerDeviceToken(@Body Map<String, Object> body);
 
     // ── Padre ─────────────────────────────────────────────────────────────────
     @GET("parent/{parentId}/children")
