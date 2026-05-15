@@ -1,3 +1,7 @@
+/* Estilos globales básicos
+   - Define fondo y fuente global para toda la app.
+   - Aquí van reglas simples que afectan a todas las páginas.
+*/
 body {
   min-height: 100vh;
   margin: 0;

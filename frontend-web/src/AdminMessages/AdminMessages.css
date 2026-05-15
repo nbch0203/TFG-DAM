@@ -1,3 +1,7 @@
+/*
+  Estilos de la pantalla de mensajería del admin.
+  Aquí se organiza el encabezado, la lista y el aspecto general.
+*/
 .admin-messages {
   display: flex;
   flex-direction: column;

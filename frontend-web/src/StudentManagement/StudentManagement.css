@@ -1,4 +1,7 @@
-/* Estilos generales reutilizables para gestión */
+/*
+  Estilos de la pantalla de gestión de alumnos.
+  La idea es reutilizar una base visual parecida al resto de gestiones.
+*/
 .gestion-container {
   max-width: 900px;
   margin: 2rem auto;

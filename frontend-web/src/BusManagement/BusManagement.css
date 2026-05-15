@@ -1,4 +1,7 @@
-/* Estilos generales reutilizables para gestión */
+/*
+  Estilos de la gestión de autobuses.
+  Aquí dejo las reglas de maquetación para tabla, modal y botones.
+*/
 .gestion-container {
   margin: 3rem auto;
   background: #fff;
@@ -71,6 +74,7 @@
   margin-bottom: 0.8rem;
 }
 .tabla-wrapper {
+  /* La tabla puede ocupar mucho ancho, por eso permitimos scroll horizontal */
   margin-top: 1.5rem;
   margin-left: -1.5rem;
   margin-right: -1.5rem;
@@ -178,6 +182,7 @@
   background: #757575;
 }
 .modal {
+  /* Modal centrado sobre fondo semitransparente */
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.3);

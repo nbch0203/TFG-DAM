@@ -1,4 +1,7 @@
-/* Formularios de los modales (crear, editar, eliminar) */
+/*
+  Estilos de los formularios modales reutilizados por varias pantallas.
+  Sirven para dar una base clara a crear, editar y eliminar datos.
+*/
 .vertical-form {
   display: flex;
   flex-direction: column;

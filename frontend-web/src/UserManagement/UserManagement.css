@@ -1,4 +1,9 @@
-/* Estilos generales reutilizables para gestión */
+/* Estilos generales reutilizables para gestión 
+  - Clases para las páginas de gestión (usuarios, alumnos, etc.).
+  - `gestion-container` centra el contenido y pone fondo blanco.
+  - Los botones `.crear-btn` y `.edit-btn` son acciones comunes.
+  - Las tablas usan estilos sencillos para legibilidad.
+*/
 .gestion-container {
   max-width: 900px;
   margin: 2rem auto;

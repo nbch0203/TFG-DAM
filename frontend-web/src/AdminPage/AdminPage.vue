@@ -1,29 +1,43 @@
 <template>
+  <!--
+    Vista principal del panel de administrador.
+    - `aside.sidebar`: menú de navegación para cambiar secciones.
+    - `main.content`: área donde se monta el componente elegido dinámicamente.
+  -->
   <div class="admin-layout">
     <aside class="sidebar">
       <nav>
         <ul>
+          <!-- Menú de navegación: cada item cambia la página actual -->
+          <li :class="{active: page==='users'}" @click="setPage('users')">Gestión de usuarios</li>
+          <li :class="{active: page==='buses'}" @click="setPage('buses')">Gestión de autobuses</li>
           <li :class="{active: page==='dashboard'}" @click="setPage('dashboard')">Dashboard</li>
           <li :class="{active: page==='schools'}" @click="setPage('schools')">Gestión de colegios</li>
           <li :class="{active: page==='students'}" @click="setPage('students')">Gestión de alumnos</li>
           <li :class="{active: page==='stops'}" @click="setPage('stops')">Gestión de paradas</li>
-          <li :class="{active: page==='buses'}" @click="setPage('buses')">Gestión de autobuses</li>
           <li :class="{active: page==='routes'}" @click="setPage('routes')">Gestión de rutas</li>
-          <li :class="{active: page==='users'}" @click="setPage('users')">Gestión de usuarios</li>
           <li :class="{active: page==='messages'}" @click="setPage('messages')">Mensajería</li>
         </ul>
       </nav>
     </aside>
     <main class="content">
+      <!-- Si hay error al cargar el componente se muestra aquí -->
       <div v-if="componentError" class="error-message">
         <h2>Error al cargar el componente</h2>
         <p>{{ componentError }}</p>
       </div>
+      <!-- `component` con :is permite montar componentes dinámicos según `currentComponent` -->
       <component v-else :is="currentComponent" />
     </main>
   </div>
 </template>
 <script setup>
+/*
+  AdminPage: lógica para el panel de administración.
+  - `page` guarda la sección actual (dashboard, buses, etc.).
+  - `currentComponent` devuelve el componente que se debe renderizar.
+  - Usamos `localStorage` para recordar la página seleccionada entre recargas.
+*/
 import { ref, computed, onErrorCaptured, onMounted } from 'vue'
 import AdminDashboard from '../AdminDashboard/AdminDashboard.vue'
 import BusManagement from '../BusManagement/BusManagement.vue'
@@ -33,28 +47,36 @@ import StudentManagement from '../StudentManagement/StudentManagement.vue'
 import RouteManagement from '../RouteManagement/RouteManagement.vue'
 import StopManagement from '../StopManagement/StopManagement.vue'
 import AdminMessages from '../AdminMessages/AdminMessages.vue'
+
+// Props: recibimos el username desde el padre si hace falta
 const props = defineProps({ username: String })
+
+// Estado reactivo: página actual y errores
 const page = ref(localStorage.getItem('adminPage') || 'dashboard')
 const componentError = ref('')
 
+// Logs sencillos para desarrollo (útiles para entender el flujo)
 console.log('AdminPage: Component loaded at ' + new Date().toISOString())
 
 onMounted(() => {
   console.log('AdminPage: Mounted, current page =', page.value)
 })
 
+// Cambia la página y guarda en localStorage
 const setPage = (val) => {
   page.value = val
   componentError.value = ''
   localStorage.setItem('adminPage', val)
 }
 
+// Capturamos errores de los hijos y mostramos mensaje
 onErrorCaptured((err, instance, info) => {
   console.error('Error en componente:', err, info)
   componentError.value = `${info}: ${err?.message || 'Error desconocido'}`
   return false
 })
 
+// Computed que elige qué componente montar según `page`
 const currentComponent = computed(() => {
   try {
     switch(page.value) {
@@ -69,6 +91,7 @@ const currentComponent = computed(() => {
       default: return AdminDashboard
     }
   } catch (err) {
+    // En caso de error, mostramos información útil
     console.error('Error al cargar componente:', err)
     componentError.value = err?.message || 'Error al cargar el componente'
     return null

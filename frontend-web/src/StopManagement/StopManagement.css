@@ -1,4 +1,7 @@
-/* Estilos generales reutilizables para gestión */
+/*
+  Estilos de la pantalla de gestión de paradas.
+  Aquí se controla el contenedor principal, tabla y botones.
+*/
 .gestion-container {
   max-width: 900px;
   margin: 2rem auto;
