@@ -32,17 +32,18 @@
       <p style="margin: 5px 0;">username: {{ username }}</p>
       <p style="margin: 5px 0;">Will render:</p>
       <p style="margin: 5px 0; color: yellow;">{{ userRole === 'ADMIN' ? '✓ AdminPage' : (userRole === 'PROFESOR' ? '✓ ProfesorPage' : (userRole === 'PARENT' ? '✓ ParentPage' : (userRole === 'DRIVER' ? '✓ DriverPage' : '✗ Unknown role')))  }}</p>
-    </div>
+    </div>-->
+    <div v-else class="dashboard-container">
     <AdminPage v-if="userRole === 'ADMIN'" :username="username" />
     <ProfesorPage v-else-if="userRole === 'PROFESOR'" :username="username" />
     <ParentPage v-else-if="userRole === 'PARENT'" :username="username" />
     <DriverPage v-else-if="userRole === 'DRIVER'" :username="username" />
-    <div v-else style="padding: 2rem; background: #ffcccc; border: 2px solid #ff0000; margin: 20px;">
-      <h2 style="color: #ff0000;">⚠️ Rol desconocido</h2>
-      <p style="color: #ff0000; font-weight: bold;">DEBUG: Valor de userRole: "{{ userRole }}" (length: {{ userRole.length }})</p>
-      <p>Este rol no es válido. Los roles esperados son: ADMIN, PROFESOR, PARENT, DRIVER</p>
+
+    <div v-else class="unknown-role">
+      <h2>Rol desconocido</h2>
+      <p>No se puede mostrar una vista para el rol "{{ userRole }}".</p>
     </div>
-  </div>-->
+  </div>
 </template>
 
 <script setup>
@@ -145,5 +146,19 @@ button:hover {
 .error {
   color: #d32f2f;
   margin-top: 1rem;
+}
+
+.dashboard-container {
+  min-height: 100vh;
+}
+
+.unknown-role {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 2rem;
+  border-radius: 8px;
+  background: #fff3f3;
+  border: 1px solid #ffb4b4;
+  color: #7f1d1d;
 }
 </style>
