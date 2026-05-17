@@ -39,3 +39,4 @@ PLAN.md
 
 .pem
 backend/scripts/*.js
+app/*
